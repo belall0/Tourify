@@ -4,6 +4,7 @@ const express = require('express');
 // 2. CONTROLLERS
 const {
   validateTourExists,
+  validateTourBody,
   getAllTours,
   createTour,
   getTour,
@@ -18,7 +19,7 @@ const router = express.Router();
 router.param('id', validateTourExists);
 
 // 5. ROUTES
-router.route('/').get(getAllTours).post(createTour);
+router.route('/').get(getAllTours).post(validateTourBody, createTour);
 router.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
 
 // 6. EXPORT ROUTER
