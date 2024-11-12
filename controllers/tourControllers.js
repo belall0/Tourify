@@ -5,10 +5,28 @@ const fs = require('node:fs');
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../db/db.json`, {
     encoding: 'utf-8',
-  })
+  }),
 );
 
-// 3. CONTROLLERS
+// 3. MIDDLEWARES
+const validateTourExists = (req, res, next, value) => {
+  const id = parseInt(req.params.id);
+  const tourIndex = tours.findIndex((tour) => tour.id === id);
+
+  if (tourIndex === -1) {
+    return res.status(404).json({
+      status: 'fail',
+      message: `tour with id: ${id} not found`,
+    });
+  }
+
+  req.tour = tours[tourIndex];
+  req.tourIndex = tourIndex;
+
+  next();
+};
+
+// 4. CONTROLLERS
 const getAllTours = (req, res) => {
   res.status(200).json({
     status: 'success',
@@ -24,32 +42,30 @@ const createTour = (req, res) => {
   const tour = Object.assign({ id }, req.body);
   tours.push(tour);
 
-  fs.writeFile(`${__dirname}/../db/db.json`, JSON.stringify(tours), { encoding: 'utf-8' }, (err) => {
-    if (err) {
-      return res.status(500).json({
-        status: 'Error',
-        message: 'Error creating tour',
-      });
-    }
+  fs.writeFile(
+    `${__dirname}/../db/db.json`,
+    JSON.stringify(tours),
+    { encoding: 'utf-8' },
+    (err) => {
+      if (err) {
+        return res.status(500).json({
+          status: 'Error',
+          message: 'Error creating tour',
+        });
+      }
 
-    res.status(201).json({
-      status: 'success',
-      data: {
-        tour,
-      },
-    });
-  });
+      res.status(201).json({
+        status: 'success',
+        data: {
+          tour,
+        },
+      });
+    },
+  );
 };
 
 const getTour = (req, res) => {
-  const tour = tours.find((el) => el.id === req.params.id);
-
-  if (!tour) {
-    return res.status(404).json({
-      status: 'Fail',
-      message: 'Tour not found',
-    });
-  }
+  const tour = req.tour;
 
   res.status(200).json({
     status: 'Success',
@@ -60,65 +76,62 @@ const getTour = (req, res) => {
 };
 
 const updateTour = (req, res) => {
-  const id = req.params.id;
-  const tour = tours.find((tour) => tour.id === id);
-
-  if (!tour) {
-    return res.status(404).json({
-      status: 'fail',
-      message: `tour with id: ${id} not found`,
-    });
-  }
+  const tour = req.tour;
+  const tourIndex = req.tourIndex;
 
   const newTour = Object.assign({}, tour, req.body);
-  const tourIndx = tours.findIndex((el) => el === tour);
-  tours[tourIndx] = newTour;
+  tours[tourIndex] = newTour;
 
-  fs.writeFile(`${__dirname}/../db/db.json`, JSON.stringify(tours), { encoding: 'utf-8' }, (err) => {
-    if (err) {
-      return res.status(500).json({
-        status: 'Error',
-        message: 'Error creating tour',
+  fs.writeFile(
+    `${__dirname}/../db/db.json`,
+    JSON.stringify(tours),
+    { encoding: 'utf-8' },
+    (err) => {
+      if (err) {
+        return res.status(500).json({
+          status: 'Error',
+          message: 'Error creating tour',
+        });
+      }
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          tour: newTour,
+        },
       });
-    }
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        tour: newTour,
-      },
-    });
-  });
+    },
+  );
 };
 
 const deleteTour = (req, res) => {
-  const id = req.params.id;
-  const tourIndx = tours.findIndex((tour) => tour.id === id);
-  if (tourIndx === -1) {
-    return res.status(404).json({
-      status: 'fail',
-      message: `tour with id: ${id} not found`,
-    });
-  }
-  const deletedTour = tours.splice(tourIndx, 1);
+  const tourIndex = req.tourIndex;
 
-  fs.writeFile(`${__dirname}/../db/db.json`, JSON.stringify(tours), { encoding: 'utf-8' }, (err) => {
-    if (err) {
-      return res.status(500).json({
-        status: 'Error',
-        message: 'Error creating tour',
+  const deletedTour = tours.splice(tourIndex, 1);
+
+  fs.writeFile(
+    `${__dirname}/../db/db.json`,
+    JSON.stringify(tours),
+    { encoding: 'utf-8' },
+    (err) => {
+      if (err) {
+        return res.status(500).json({
+          status: 'Error',
+          message: 'Error creating tour',
+        });
+      }
+
+      res.status(200).json({
+        status: 'success',
+        message: 'tour deleted successfully',
       });
-    }
-
-    res.status(200).json({
-      status: 'success',
-      message: 'tour deleted successfully',
-    });
-  });
+    },
+  );
 };
 
 // 4. EXPORT CONTROLLERS
 module.exports = {
+  validateTourExists,
   getAllTours,
   createTour,
   getTour,
