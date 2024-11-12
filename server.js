@@ -1,6 +1,6 @@
 // 1. IMPORTS
-const { app } = require(`${__dirname}/app`);
 const dotenv = require('dotenv').config(); // Load environment variables
+const { app } = require(`${__dirname}/app`);
 
 // 2. START SERVER
 const SERVER_PORT = process.env.PORT || 3000;

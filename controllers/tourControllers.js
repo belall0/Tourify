@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../db/db.json`, {
     encoding: 'utf-8',
-  })
+  }),
 );
 
 // 3. MIDDLEWARES
@@ -62,21 +62,26 @@ const createTour = (req, res) => {
   const tour = Object.assign({ id }, req.body);
   tours.push(tour);
 
-  fs.writeFile(`${__dirname}/../db/db.json`, JSON.stringify(tours), { encoding: 'utf-8' }, (err) => {
-    if (err) {
-      return res.status(500).json({
-        status: 'Error',
-        message: 'Error creating tour',
-      });
-    }
+  fs.writeFile(
+    `${__dirname}/../db/db.json`,
+    JSON.stringify(tours),
+    { encoding: 'utf-8' },
+    (err) => {
+      if (err) {
+        return res.status(500).json({
+          status: 'Error',
+          message: 'Error creating tour',
+        });
+      }
 
-    res.status(201).json({
-      status: 'success',
-      data: {
-        tour,
-      },
-    });
-  });
+      res.status(201).json({
+        status: 'success',
+        data: {
+          tour,
+        },
+      });
+    },
+  );
 };
 
 const getTour = (req, res) => {
@@ -97,21 +102,26 @@ const updateTour = (req, res) => {
   const newTour = Object.assign({}, tour, req.body);
   tours[tourIndex] = newTour;
 
-  fs.writeFile(`${__dirname}/../db/db.json`, JSON.stringify(tours), { encoding: 'utf-8' }, (err) => {
-    if (err) {
-      return res.status(500).json({
-        status: 'Error',
-        message: 'Error creating tour',
-      });
-    }
+  fs.writeFile(
+    `${__dirname}/../db/db.json`,
+    JSON.stringify(tours),
+    { encoding: 'utf-8' },
+    (err) => {
+      if (err) {
+        return res.status(500).json({
+          status: 'Error',
+          message: 'Error creating tour',
+        });
+      }
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        tour: newTour,
-      },
-    });
-  });
+      res.status(200).json({
+        status: 'success',
+        data: {
+          tour: newTour,
+        },
+      });
+    },
+  );
 };
 
 const deleteTour = (req, res) => {
@@ -119,19 +129,24 @@ const deleteTour = (req, res) => {
 
   const deletedTour = tours.splice(tourIndex, 1);
 
-  fs.writeFile(`${__dirname}/../db/db.json`, JSON.stringify(tours), { encoding: 'utf-8' }, (err) => {
-    if (err) {
-      return res.status(500).json({
-        status: 'Error',
-        message: 'Error creating tour',
-      });
-    }
+  fs.writeFile(
+    `${__dirname}/../db/db.json`,
+    JSON.stringify(tours),
+    { encoding: 'utf-8' },
+    (err) => {
+      if (err) {
+        return res.status(500).json({
+          status: 'Error',
+          message: 'Error creating tour',
+        });
+      }
 
-    res.status(200).json({
-      status: 'success',
-      message: 'tour deleted successfully',
-    });
-  });
+      res.status(200).json({
+        status: 'success',
+        message: 'tour deleted successfully',
+      });
+    },
+  );
 };
 
 // 4. EXPORT CONTROLLERS
