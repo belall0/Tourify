@@ -1,26 +1,18 @@
-// 1. IMPORTS
-const express = require('express');
+import express from 'express';
+import * as tourController from '../controllers/tourControllers.js';
 
-// 2. CONTROLLERS
-const {
-  validateTourExists,
-  validateTourBody,
-  getAllTours,
-  createTour,
-  getTour,
-  updateTour,
-  deleteTour,
-} = require(`${__dirname}/../controllers/tourControllers`);
-
-// 3. ROUTER INITIALIZATION
 const router = express.Router();
 
-// 4. ROUTER MIDDLEWARE
-router.param('id', validateTourExists);
+router.param('id', tourController.validateTourExists);
 
-// 5. ROUTES
-router.route('/').get(getAllTours).post(validateTourBody, createTour);
-router.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
+router
+  .route('/')
+  .get(tourController.getAllTours)
+  .post(tourController.validateTourBody, tourController.createTour);
+router
+  .route('/:id')
+  .get(tourController.getTour)
+  .patch(tourController.updateTour)
+  .delete(tourController.deleteTour);
 
-// 6. EXPORT ROUTER
-module.exports = { tourRoutes: router };
+export default router;

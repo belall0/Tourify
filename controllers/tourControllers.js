@@ -1,15 +1,13 @@
-// 1. IMPORTS
-const fs = require('node:fs');
+import fs from 'node:fs';
+const __dirname = import.meta.dirname;
 
-// 2. TOURS INITIALIZATION
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../db/db.json`, {
     encoding: 'utf-8',
   }),
 );
 
-// 3. MIDDLEWARES
-const validateTourExists = (req, res, next, value) => {
+export const validateTourExists = (req, res, next, value) => {
   const id = parseInt(req.params.id);
   const tourIndex = tours.findIndex((tour) => tour.id === id);
 
@@ -26,7 +24,7 @@ const validateTourExists = (req, res, next, value) => {
   next();
 };
 
-const validateTourBody = (req, res, next) => {
+export const validateTourBody = (req, res, next) => {
   const { name, price } = req.body;
 
   if (!name || (!price && price != 0)) {
@@ -46,8 +44,7 @@ const validateTourBody = (req, res, next) => {
   next();
 };
 
-// 4. CONTROLLERS
-const getAllTours = (req, res) => {
+export const getAllTours = (req, res) => {
   res.status(200).json({
     status: 'success',
     resultCount: tours.length,
@@ -57,7 +54,7 @@ const getAllTours = (req, res) => {
   });
 };
 
-const createTour = (req, res) => {
+export const createTour = (req, res) => {
   const id = tours.length > 0 ? tours[tours.length - 1].id + 1 : 1;
   const tour = Object.assign({ id }, req.body);
   tours.push(tour);
@@ -84,7 +81,7 @@ const createTour = (req, res) => {
   );
 };
 
-const getTour = (req, res) => {
+export const getTour = (req, res) => {
   const tour = req.tour;
 
   res.status(200).json({
@@ -95,7 +92,7 @@ const getTour = (req, res) => {
   });
 };
 
-const updateTour = (req, res) => {
+export const updateTour = (req, res) => {
   const tour = req.tour;
   const tourIndex = req.tourIndex;
 
@@ -124,7 +121,7 @@ const updateTour = (req, res) => {
   );
 };
 
-const deleteTour = (req, res) => {
+export const deleteTour = (req, res) => {
   const tourIndex = req.tourIndex;
 
   const deletedTour = tours.splice(tourIndex, 1);
@@ -147,15 +144,4 @@ const deleteTour = (req, res) => {
       });
     },
   );
-};
-
-// 4. EXPORT CONTROLLERS
-module.exports = {
-  validateTourBody,
-  validateTourExists,
-  getAllTours,
-  createTour,
-  getTour,
-  updateTour,
-  deleteTour,
 };
