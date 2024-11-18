@@ -67,8 +67,8 @@ const tourSchema = new mongoose.Schema(
     summary: {
       type: String,
       required: [true, 'the tour summary is required'],
-      minLength: [50, 'The tour name is too short. It must be at least 3 characters long.'],
-      maxLength: [150, 'The tour name is too long. It must be 40 characters or fewer.'],
+      minLength: [10, 'The tour summary is too short. It must be at least 10 characters long.'],
+      maxLength: [150, 'The tour summary is too long. It must be 150 characters or fewer.'],
       trim: true,
     },
 
@@ -90,11 +90,22 @@ const tourSchema = new mongoose.Schema(
       type: [Date],
     },
   },
-  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } },
+  {
+    timestamps: true,
+    toJSON: { versionKey: false },
+    toObject: { versionKey: false },
+  },
 );
 
-tourSchema.pre('save', function (next) {
+tourSchema.pre('save', function async(next) {
   this.slug = slugify(this.name, { lower: true });
+
+  next();
+});
+
+tourSchema.pre(['updateOne', 'updateMany', 'findOneAndUpdate', 'findByIdAndUpdate'], function async(next) {
+  const update = this.getUpdate();
+  update.slug = slugify(update.name, { lower: true });
 
   next();
 });
