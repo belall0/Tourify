@@ -1,9 +1,22 @@
 import Tour from '../models/tourModel.js';
 import { HttpStatus, ResponseHandler } from '../utils/responseHandler.js';
+import APIFeatures from '../utils/apiFeatures.js';
 
 export const getAllTours = async (req, res) => {
   try {
-    const tours = await Tour.find({});
+    // initialize query object
+    let query = Tour.find();
+
+    // build query
+    query = APIFeatures.filter(query, req.query);
+    query = APIFeatures.sort(query, req.query);
+    query = APIFeatures.paginate(query, req.query);
+    query = APIFeatures.select(query, req.query);
+
+    // execute query
+    const tours = await query;
+
+    // send response
     ResponseHandler.success(res, HttpStatus.OK, tours, 'tours');
   } catch (error) {
     ResponseHandler.error(res, HttpStatus.INTERNAL_SERVER_ERROR, error.message);

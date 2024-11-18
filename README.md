@@ -20,6 +20,11 @@ Tourify is a RESTful API for managing tours, designed with scalability and flexi
 - RESTful architecture with well-defined endpoints ensuring seamless integration with any client.
 - MVC architecture for easy maintenance and scalability.
 - CRUD functionality for tours
+- Advanced filtering, sorting, and pagination for tours.
+  - Filtering by fields and ranges.
+  - Sorting by single or multiple fields.
+  - Pagination for handling large datasets.
+  - Field inclusion/exclusion for optimized responses.
 
 ---
 

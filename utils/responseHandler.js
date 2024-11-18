@@ -7,7 +7,8 @@ class ResponseHandler {
     };
 
     if (status !== HttpStatus.NO_CONTENT) {
-      response.count = data.length || 1;
+      // response.count = data.length || 1;
+      response.count = Array.isArray(data) ? data.length || 0 : 1;
       response.data = { [key]: data };
     }
 
