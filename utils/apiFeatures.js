@@ -36,6 +36,8 @@ class APIFeatures {
       const fields = queryString.fields.split(',').join(' ');
       return query.select(fields);
     }
+
+    return query;
   }
 }
 

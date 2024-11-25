@@ -2,7 +2,7 @@
 
 ## overview
 
-Tourify is a RESTful API for managing tours, designed with scalability and flexibility in mind.
+Tourify is a RESTful API for managing tours, designed with readability, maintainability, and scalability in mind.
 
 ---
 
@@ -25,6 +25,13 @@ Tourify is a RESTful API for managing tours, designed with scalability and flexi
   - Sorting by single or multiple fields.
   - Pagination for handling large datasets.
   - Field inclusion/exclusion for optimized responses.
+- Error handling with centralized error handling middleware.
+  - Add error class for operational errors.
+  - **catchAsync Utility**: Wraps async route handlers to catch and forward errors, eliminating repetitive `try...catch`
+  - Differentiation between operational and programming errors.
+  - Detailed error messages in development mode and generic messages in production mode.
+  - Mongoose Error Handling: Custom error handling for many Mongoose errors.
+  - Graceful shutdown on unhandled promise rejections
 
 ---
 
