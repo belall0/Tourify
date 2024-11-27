@@ -44,6 +44,7 @@ Tourify is a RESTful API for managing tours, designed with readability, maintain
 - **Architecture**: MVC
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB, Mongoose
+- **Authentication**: JWT
 
 ---
 
