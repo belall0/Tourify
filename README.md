@@ -31,7 +31,11 @@ Tourify is a RESTful API for managing tours, designed with readability, maintain
   - Differentiation between operational and programming errors.
   - Detailed error messages in development mode and generic messages in production mode.
   - Mongoose Error Handling: Custom error handling for many Mongoose errors.
-  - Graceful shutdown on unhandled promise rejections
+- Authentication and Authorization
+  - User signup and login.
+  - JWT token generation and verification.
+  - Protect routes with middleware.
+  - Authorization based on user roles.
 
 ---
 

@@ -1,4 +1,7 @@
 import * as mongooseErrorHandler from './mongooseErrorHandler.js';
+import * as jwtErrorHandler from './jwtErrorHandler.js';
+const ENV = process.env.NODE_ENV;
+// DONE:
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -8,22 +11,8 @@ const sendErrorDev = (err, res) => {
   });
 };
 
+// DONE:
 const sendErrorProd = (err, res) => {
-  // handle mongoose CastError
-  if (err.name === 'CastError') {
-    err = mongooseErrorHandler.handleMongooseCastError(err);
-  }
-
-  // handle mongoose duplicate fields
-  if (err.code === 11000) {
-    err = mongooseErrorHandler.handleMongooseDuplicateFields(err);
-  }
-
-  // handle mongoose validation error
-  if (err.name === 'ValidationError') {
-    err = mongooseErrorHandler.handleMongooseValidationError(err);
-  }
-
   if (err.isOperational) {
     return res.status(err.statusCode).json({
       status: err.status,
@@ -32,19 +21,30 @@ const sendErrorProd = (err, res) => {
   }
 
   // don't send error details in production
+  console.error(err);
   res.status(500).json({
     status: 'error',
     message: 'something went wrong, please try again later',
   });
 };
 
+// DONE:
 const globalMiddlewareHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
-  if (process.env.NODE_ENV === 'development') {
+  if (ENV === 'development') {
     sendErrorDev(err, res);
-  } else if (process.env.NODE_ENV === 'production') {
+  } else if (ENV === 'production') {
+    // handle Mongoose errors
+    if (err.name === 'CastError') err = mongooseErrorHandler.handleDBCastError(err);
+    if (err.name === 'ValidationError') err = mongooseErrorHandler.handleDBValidationError(err);
+    if (err.code === 11000) err = mongooseErrorHandler.handleDBDuplicateFields(err);
+
+    // handle JsonWebTokenError
+    if (err.name === 'JsonWebTokenError') err = jwtErrorHandler.handleJWTError(err);
+    if (err.name === 'TokenExpiredError') err = jwtErrorHandler.handleJWTExpiredError(err);
+
     sendErrorProd(err, res);
   }
 };

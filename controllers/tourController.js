@@ -1,9 +1,10 @@
 import Tour from '../models/tourModel.js';
 import APIFeatures from '../utils/apiFeatures.js';
 import catchAsync from '../utils/catchAsync.js';
-import { HttpStatus, ResponseHandler } from '../utils/responseHandler.js';
+import { HttpStatus, success } from '../utils/responseHandler.js';
 import HttpError from '../utils/httpError.js';
 
+// DONE:
 export const getAllTours = catchAsync(async (req, res, next) => {
   // initialize query object
   let query = Tour.find();
@@ -18,37 +19,40 @@ export const getAllTours = catchAsync(async (req, res, next) => {
   const tours = await query;
 
   // send response
-  ResponseHandler.success(res, HttpStatus.OK, tours, 'tours');
+  success(res, HttpStatus.OK, tours, 'tours');
 });
 
+// DONE:
 export const createTour = catchAsync(async (req, res, next) => {
   const tour = await Tour.create(req.body);
-  ResponseHandler.success(res, HttpStatus.CREATED, tour, 'tour');
+  success(res, HttpStatus.CREATED, tour, 'tour');
 });
 
+// DONE:
 export const getTour = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.id);
   if (!tour)
     return next(new HttpError(`No tour found with id: ${req.params.id}`, HttpStatus.NOT_FOUND));
 
-  ResponseHandler.success(res, HttpStatus.OK, tour, 'tour');
+  success(res, HttpStatus.OK, tour, 'tour');
 });
 
+// DONE:
 export const updateTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const tour = await Tour.findById(req.params.id);
   if (!tour)
     return next(new HttpError(`No tour found with id: ${req.params.id}`, HttpStatus.NOT_FOUND));
 
-  ResponseHandler.success(res, HttpStatus.OK, tour, 'tour');
+  Object.assign(tour, req.body);
+  await tour.save();
+  success(res, HttpStatus.OK, tour, 'tour');
 });
 
+// DONE:
 export const deleteTour = catchAsync(async (req, res, next) => {
   const tour = await Tour.findByIdAndDelete(req.params.id);
   if (!tour)
     return next(new HttpError(`No tour found with id: ${req.params.id}`, HttpStatus.NOT_FOUND));
 
-  ResponseHandler.success(res, HttpStatus.NO_CONTENT);
+  success(res, HttpStatus.NO_CONTENT);
 });

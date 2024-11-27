@@ -2,7 +2,8 @@ import express from 'express';
 import morgan from 'morgan';
 import tourRoutes from './routes/tourRoutes.js';
 import HttpError from './utils/httpError.js';
-import globalMiddlewareHandler from './middlewares/errorHandlers/errorMiddleware.js';
+import globalMiddlewareHandler from './middlewares/errorMiddleware.js';
+import userRoutes from './routes/userRoutes.js';
 
 const app = express();
 
@@ -12,6 +13,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 app.use('/api/tours', tourRoutes);
+app.use('/api/users', userRoutes);
 
 // 404 handler
 app.all('*', (req, res, next) => {

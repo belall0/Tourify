@@ -59,8 +59,10 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       default: 0,
       validate: {
-        validator: function (value) {},
-        message: 'Discount price ({VALUE}) should be below regular price value',
+        validator: function (value) {
+          return value <= this.price;
+        },
+        message: `Discount price ({VALUE}) should be below the regular price`,
       },
     },
 
@@ -103,20 +105,5 @@ tourSchema.pre('save', function async(next) {
   next();
 });
 
-tourSchema.pre(
-  ['updateOne', 'updateMany', 'findOneAndUpdate', 'findByIdAndUpdate'],
-  function async(next) {
-    const update = this.getUpdate();
-
-    // if the name is being updated, update the slug as well
-    if (update.name) {
-      update.slug = slugify(update.name, { lower: true });
-    }
-
-    next();
-  },
-);
-
 const Tour = mongoose.model('Tour', tourSchema);
-
 export default Tour;
