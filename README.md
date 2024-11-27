@@ -41,7 +41,7 @@ Tourify is a RESTful API for managing tours, designed with readability, maintain
 
 ## Tech Stack
 
-- **Architecture**: MVC
+- **Architecture**: MVC, RESTful
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB, Mongoose
 - **Authentication**: JWT
@@ -59,7 +59,7 @@ git clone
 2- Navigate to the project directory:
 
 ```bash
-cd tourify
+cd Tourify
 ```
 
 3- Install the dependencies:
@@ -71,9 +71,11 @@ npm install
 4- Create a `.env` file in the root directory and add the following environment variables:
 
 ```bash
-NODE_ENV=development
+NODE_ENV=production/development
 PORT=3000
 DATABASE_URL=<your_mongodb_uri>
+JWT_SECRET=<your_secret_key>
+JWT_EXPIRES_IN=90d
 ```
 
 5- Start the server:
@@ -97,5 +99,12 @@ API will be running on `http://localhost:3000`.
 | POST   | /api/tours     | Create a new tour       |
 | PATCH  | /api/tours/:id | Update a tour by ID     |
 | DELETE | /api/tours/:id | Delete a tour by ID     |
+
+### Users
+
+| Method | Endpoint          | Description            |
+| ------ | ----------------- | ---------------------- |
+| POST   | /api/users/signup | Create a new user      |
+| POST   | /api/users/login  | Login an existing user |
 
 ---
