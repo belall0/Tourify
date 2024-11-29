@@ -4,7 +4,10 @@ import * as authController from '../controllers/authController.js';
 
 const router = express.Router();
 
-router.route('/').get(tourController.getAllTours).post(tourController.createTour);
+router
+  .route('/')
+  .get(authController.protectRoute, tourController.getAllTours)
+  .post(tourController.createTour);
 
 router
   .route('/:id')

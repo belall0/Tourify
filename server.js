@@ -4,7 +4,7 @@ import app from './app.js';
 await connectDB();
 
 const PORT = process.env.PORT || 3000;
-const server = app.listen(PORT, 'localhost', () => {
+app.listen(PORT, 'localhost', () => {
   console.log(
     `Server is running on http://localhost:${PORT} in ${process.env.NODE_ENV} environment`,
   );

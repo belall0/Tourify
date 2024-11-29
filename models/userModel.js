@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
+import HttpError from '../utils/httpError.js';
 
-// DONE:
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -30,12 +30,18 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    passwordUpdatedAt: {
+      type: Date,
+      default: undefined, // to ensure the field is not automatically set
+      select: false,
+    },
+
     photo: String,
 
     role: {
       type: String,
       default: 'user',
-      enum: ['user', 'guide', 'lead-guide'],
+      enum: ['user', 'admin', 'guide', 'lead-guide'],
     },
   },
   {
@@ -45,16 +51,17 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-// DONE:
 userSchema.pre('save', async function (next) {
-  // make sure role is anything but admin
   if (this.role === 'admin') {
-    this.role = 'user';
+    return next(new HttpError('Admin role is not allowed', 400));
   }
 
-  // only hash if password is modified
   if (!this.isModified('password')) {
     return next();
+  }
+
+  if (!this.isNew) {
+    this.passwordUpdatedAt = Date.now();
   }
 
   this.password = await bcrypt.hash(this.password, 12);
@@ -62,9 +69,18 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-// DONE:
-userSchema.methods.isCorrectPassword = async function (plainPassword) {
+userSchema.methods.isPasswordCorrect = async function (plainPassword) {
   return await bcrypt.compare(plainPassword, this.password);
+};
+
+userSchema.methods.isPasswordUpdatedAfter = function (JWTTimestamp) {
+  if (!this.passwordUpdatedAt) {
+    return false;
+  }
+
+  const passwordChangedTime = parseInt(this.passwordUpdatedAt.getTime() / 1000); // convert to seconds to match JWTTimestamp
+  // If JWT timestamp is less than password changed timestamp, it means password was changed after token was issued
+  return JWTTimestamp <= passwordChangedTime;
 };
 
 const User = mongoose.model('User', userSchema);

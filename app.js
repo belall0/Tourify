@@ -1,8 +1,8 @@
 import express from 'express';
 import morgan from 'morgan';
-import tourRoutes from './routes/tourRoutes.js';
 import HttpError from './utils/httpError.js';
 import globalMiddlewareHandler from './middlewares/errorMiddleware.js';
+import tourRoutes from './routes/tourRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 
 const app = express();
