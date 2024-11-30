@@ -1,12 +1,19 @@
 import express from 'express';
 import morgan from 'morgan';
+import { rateLimit } from 'express-rate-limit';
 import HttpError from './utils/httpError.js';
 import globalMiddlewareHandler from './middlewares/errorMiddleware.js';
 import tourRoutes from './routes/tourRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 
 const app = express();
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+});
 
+app.use(limiter);
 app.use(express.json());
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
