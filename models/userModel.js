@@ -35,25 +35,22 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Password is required'],
       minLength: [6, 'Password must be at least 6 characters'],
-      select: false,
       trim: true,
     },
 
     passwordUpdatedAt: {
       type: Date,
       default: undefined, // to ensure the field is not automatically set
-      select: false,
     },
+
     passwordResetToken: {
       type: String,
       default: undefined,
-      select: false,
     },
 
     passwordResetTokenExpiry: {
       type: Date,
       default: undefined,
-      select: false,
     },
   },
   {
@@ -97,6 +94,7 @@ userSchema.methods.isPasswordUpdatedAfter = function (JWTTimestamp) {
 
 userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString('hex');
+
   this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
   this.passwordResetTokenExpiry = Date.now() + 10 * 60 * 1000;
 

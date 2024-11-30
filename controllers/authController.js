@@ -7,16 +7,20 @@ import jwt from 'jsonwebtoken';
 import { promisify } from 'node:util';
 import { sendMail } from '../utils/emailService.js';
 import crypto from 'node:crypto';
+import { filterObjectFields, filterDocumentFields } from '../utils/dataFilter.js';
 
 export const signup = catchAsync(async (req, res, next) => {
-  const user = await User.create(req.body);
-  const userWithoutSensitiveData = {
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    photo: user.photo,
-  };
-  success(res, HttpStatus.CREATED, userWithoutSensitiveData, 'user', generateToken(user._id));
+  // 1. Filter and sanitize input fields to prevent unauthorized data injection
+  const filteredBody = filterObjectFields(req.body, ['name', 'email', 'photo', 'role', 'password']);
+
+  // 2. Create user in the database using only the filtered, safe fields
+  const user = await User.create(filteredBody);
+
+  // 3. Filter user document to remove sensitive information from the response
+  const filteredUser = filterDocumentFields(user, ['name', 'email', 'photo', 'role']);
+
+  // 4. Send successful response with created user data and authentication token
+  success(res, HttpStatus.CREATED, filteredUser, 'user', generateToken(user._id));
 });
 
 export const login = catchAsync(async (req, res, next) => {
@@ -27,7 +31,7 @@ export const login = catchAsync(async (req, res, next) => {
   }
 
   // 2. Check if user exists and password is correct
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email });
   if (!user || !(await user.isPasswordCorrect(password))) {
     return next(new HttpError('Invalid email or password', HttpStatus.UNAUTHORIZED));
   }
@@ -59,7 +63,7 @@ export const protectRoute = catchAsync(async (req, res, next) => {
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
   // 3. Check if user still exists
-  const currentUser = await User.findById(decoded.id).select('+passwordUpdatedAt');
+  const currentUser = await User.findById(decoded.id);
   if (!currentUser) {
     return next(
       new HttpError('The user belonging to this token no longer exists.', HttpStatus.UNAUTHORIZED),
@@ -68,7 +72,6 @@ export const protectRoute = catchAsync(async (req, res, next) => {
 
   // 4. Check if user changed password after token was issued
   if (currentUser.isPasswordUpdatedAfter(decoded.iat)) {
-    console.log('Password changed');
     return next(
       new HttpError(
         'User recently changed password. Please log in again.',
@@ -110,13 +113,10 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
   // 3. generate password reset token
   const resetToken = user.createPasswordResetToken();
 
-  // 4. Save reset token and expiration to user document
-  await user.save();
-
-  // 5. Create password reset URL
+  // 4. Create password reset URL
   const resetURL = `${req.protocol}://${req.get('host')}/api/users/reset-password/${resetToken}`;
 
-  // 6.Send email with reset link
+  // 5.Send email with reset link
   const mailOptions = {
     from: 'Belal Muhammad <belallmuhammad0@gmail.com',
     to: user.email,
@@ -126,60 +126,75 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
   };
 
   try {
-    // send email
     await sendMail(mailOptions);
-    success(res, HttpStatus.OK, null, null, null, 'Password reset token sent to email');
-  } catch (error) {
-    // if sending email failed, reset all fields
-    user.passwordResetToken = undefined;
-    user.passwordResetTokenExpiry = undefined;
 
+    // Save reset token and expiration only after email sends successfully
     await user.save();
 
+    success(res, HttpStatus.OK, null, null, null, 'Password reset token sent to email');
+  } catch (error) {
     return next(new HttpError('Error sending reset email', HttpStatus.INTERNAL_SERVER_ERROR));
   }
 });
 
 export const resetPassword = catchAsync(async (req, res, next) => {
-  // 1. Hash the token from the URL
-  const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+  // 1. Extract the reset token and new password from the request
+  const token = req.params.token;
+  const newPassword = req.body.newPassword;
 
-  // 2. Find user with valid reset token
+  // 2. Check if the new password is provided
+  if (!newPassword) {
+    return next(new HttpError('newPassword is required', HttpStatus.BAD_REQUEST));
+  }
+
+  // 3. Hash the reset token to securely compare it with the stored hashed token
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+  // 4. Find the user associated with the valid reset token
   const user = await User.findOne({
     passwordResetToken: hashedToken,
     passwordResetTokenExpiry: { $gt: Date.now() },
   });
 
-  // 3. If token is invalid or expired
+  // 5. Handle case where no user is found (invalid or expired token)
   if (!user) {
     return next(new HttpError('Token is invalid or has expired', HttpStatus.BAD_REQUEST));
   }
 
-  // 4. Update Password
-  user.password = req.body.password;
+  // 6. Update the user's password with the new password
+  user.password = newPassword;
 
-  // 5. clear reset token fields
+  // 7. Clear the password reset token and expiry time to prevent reuse
   user.passwordResetToken = undefined;
   user.passwordResetTokenExpiry = undefined;
 
   await user.save();
-  const token = generateToken(user._id);
-
-  success(res, HttpStatus.OK, null, null, token, 'Password reset successfully');
+  success(res, HttpStatus.OK, null, null, generateToken(user._id), 'Password reset successfully');
 });
 
 export const updatePassword = catchAsync(async (req, res, next) => {
-  // 1. Find the user
-  const user = await User.findById(req.user._id).select('+password');
+  // 1. Check if both currentPassword and newPassword are provided in the request.
+  const { currentPassword, newPassword } = req.body;
 
-  // 2. Verify current password
-  const isPasswordCorrect = await user.isPasswordCorrect(req.body.password);
+  if (!currentPassword || !newPassword) {
+    return next(
+      new HttpError(
+        'Please provide your current password along with the new password.',
+        HttpStatus.BAD_REQUEST,
+      ),
+    );
+  }
+
+  // 2. Check if the provided current password matches the user's actual password.
+  const user = await User.findById(req.user._id);
+
+  const isPasswordCorrect = await user.isPasswordCorrect(currentPassword);
   if (!isPasswordCorrect) {
     return next(new HttpError('Current password is incorrect', HttpStatus.UNAUTHORIZED));
   }
 
-  // 3. Save the updated password
-  req.user.password = req.body.newPassword;
+  // 3. Update the user's password with the new password provided in the request body. and send a success response to the client
+  user.password = newPassword;
   await user.save();
 
   success(
