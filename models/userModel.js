@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
 import HttpError from '../utils/httpError.js';
+import crypto from 'node:crypto';
 
 const userSchema = new mongoose.Schema(
   {
@@ -22,6 +23,14 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
     },
 
+    photo: String,
+
+    role: {
+      type: String,
+      default: 'user',
+      enum: ['user', 'admin', 'guide', 'lead-guide'],
+    },
+
     password: {
       type: String,
       required: [true, 'Password is required'],
@@ -35,13 +44,16 @@ const userSchema = new mongoose.Schema(
       default: undefined, // to ensure the field is not automatically set
       select: false,
     },
-
-    photo: String,
-
-    role: {
+    passwordResetToken: {
       type: String,
-      default: 'user',
-      enum: ['user', 'admin', 'guide', 'lead-guide'],
+      default: undefined,
+      select: false,
+    },
+
+    passwordResetTokenExpiry: {
+      type: Date,
+      default: undefined,
+      select: false,
     },
   },
   {
@@ -52,7 +64,7 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre('save', async function (next) {
-  if (this.role === 'admin') {
+  if (this.isModified('role') && this.role === 'admin') {
     return next(new HttpError('Admin role is not allowed', 400));
   }
 
@@ -81,6 +93,14 @@ userSchema.methods.isPasswordUpdatedAfter = function (JWTTimestamp) {
   const passwordChangedTime = parseInt(this.passwordUpdatedAt.getTime() / 1000); // convert to seconds to match JWTTimestamp
   // If JWT timestamp is less than password changed timestamp, it means password was changed after token was issued
   return JWTTimestamp <= passwordChangedTime;
+};
+
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  this.passwordResetTokenExpiry = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
 };
 
 const User = mongoose.model('User', userSchema);
