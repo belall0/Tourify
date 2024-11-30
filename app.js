@@ -1,6 +1,8 @@
 import express from 'express';
 import morgan from 'morgan';
 import { rateLimit } from 'express-rate-limit';
+import helmet from 'helmet';
+
 import HttpError from './utils/httpError.js';
 import globalMiddlewareHandler from './middlewares/errorMiddleware.js';
 import tourRoutes from './routes/tourRoutes.js';
@@ -14,7 +16,9 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
-app.use(express.json());
+app.use(helmet());
+
+app.use(express.json({ limit: '10kb' }));
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
