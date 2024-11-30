@@ -10,15 +10,13 @@ import crypto from 'node:crypto';
 
 export const signup = catchAsync(async (req, res, next) => {
   const user = await User.create(req.body);
-  const token = generateToken(user._id);
-
   const userWithoutSensitiveData = {
     _id: user._id,
     name: user.name,
     email: user.email,
     photo: user.photo,
   };
-  success(res, HttpStatus.CREATED, userWithoutSensitiveData, 'user', token);
+  success(res, HttpStatus.CREATED, userWithoutSensitiveData, 'user', generateToken(user._id));
 });
 
 export const login = catchAsync(async (req, res, next) => {
@@ -168,4 +166,28 @@ export const resetPassword = catchAsync(async (req, res, next) => {
   const token = generateToken(user._id);
 
   success(res, HttpStatus.OK, null, null, token, 'Password reset successfully');
+});
+
+export const updatePassword = catchAsync(async (req, res, next) => {
+  // 1. Find the user
+  const user = await User.findById(req.user._id).select('+password');
+
+  // 2. Verify current password
+  const isPasswordCorrect = await user.isPasswordCorrect(req.body.password);
+  if (!isPasswordCorrect) {
+    return next(new HttpError('Current password is incorrect', HttpStatus.UNAUTHORIZED));
+  }
+
+  // 3. Save the updated password
+  req.user.password = req.body.newPassword;
+  await user.save();
+
+  success(
+    res,
+    HttpStatus.OK,
+    null,
+    null,
+    generateToken(req.user._id),
+    'Password Updated Successfully',
+  );
 });

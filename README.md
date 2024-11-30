@@ -33,11 +33,11 @@ Tourify is a RESTful API for managing tours, designed with readability, maintain
   - Mongoose Error Handling: Custom error handling for many Mongoose errors.
 - Authentication and Authorization
   - User signup and login.
-  - User logout and logout from all devices.
   - JWT token generation and verification.
   - Protect routes with middleware.
   - Authorization based on user roles.
   - Password reset functionality
+  - Password change functionality
 
 ---
 
@@ -110,5 +110,6 @@ API will be running on `http://localhost:3000`.
 | POST   | /api/users/login           | Login an existing user |
 | POST   | /api/users/forgot-password | Forgot password        |
 | PATCH  | /api/users/reset-password  | Reset password         |
+| PATCH  | /api/users/update-password | Update password        |
 
 ---
