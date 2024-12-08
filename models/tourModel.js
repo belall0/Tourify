@@ -1,6 +1,17 @@
-import mongoose from 'mongoose';
+import mongoose, { mongo } from 'mongoose';
 import slugify from 'slugify';
+import HttpError from '../utils/httpError.js';
 
+// UTILITY FUNCTIONS
+const removeFields = function (doc, ret) {
+  delete ret.id;
+  delete ret.__v;
+  delete ret.slug;
+  delete ret.updatedAt;
+  delete ret.createdAt;
+};
+
+// SCHEMA DEFINITION
 const tourSchema = new mongoose.Schema(
   {
     name: {
@@ -91,19 +102,104 @@ const tourSchema = new mongoose.Schema(
     startDates: {
       type: [Date],
     },
+
+    startLocation: {
+      type: {
+        type: String,
+        default: 'point',
+        enum: ['point'],
+      },
+
+      coordinates: {
+        type: [Number], // [latitude, longitude]
+      },
+
+      address: {
+        type: String,
+      },
+
+      description: {
+        type: String,
+      },
+    },
+
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'point',
+          enum: ['point'],
+        },
+
+        coordinates: {
+          type: [Number], // [latitude, longitude]
+        },
+
+        address: {
+          type: String,
+        },
+
+        description: {
+          type: String,
+        },
+
+        day: {
+          type: Number,
+        },
+      },
+    ],
+
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
+
   {
     timestamps: true,
-    toJSON: { versionKey: false },
-    toObject: { versionKey: false },
+    toJSON: { virtuals: true, versionKey: false, transform: removeFields },
+    toObject: { virtuals: true, versionKey: false, transform: removeFields },
   },
 );
 
-tourSchema.pre('save', function async(next) {
+// MIDDLEWARES
+tourSchema.pre('save', async function (next) {
   this.slug = slugify(this.name, { lower: true });
 
   next();
 });
 
+tourSchema.pre('save', async function (next) {
+  // Validate Guides IDs
+  if (this.guides && this.guides.length > 0) {
+    const existingGuides = await mongoose.model('User').find({ _id: { $in: this.guides } });
+
+    if (existingGuides.length !== this.guides.length) {
+      const existingGuidesIds = existingGuides.map((guide) => guide._id.toString());
+
+      const missingGuides = this.guides.filter(
+        (guideId) => !existingGuidesIds.includes(guideId.toString()),
+      );
+
+      return next(new HttpError(`No guide(s) found with id(s): ${missingGuides.join(', ')}`, 404));
+    }
+  }
+
+  next();
+});
+
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: 'name email -_id',
+  });
+
+  next();
+});
+
+// MODEL DEFINITION
 const Tour = mongoose.model('Tour', tourSchema);
+
 export default Tour;

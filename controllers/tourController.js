@@ -23,7 +23,9 @@ export const getAllTours = catchAsync(async (req, res, next) => {
 
 export const createTour = catchAsync(async (req, res, next) => {
   const tour = await Tour.create(req.body);
-  success(res, HttpStatus.CREATED, tour, 'tour');
+  const populatedTour = await Tour.findById(tour._id);
+
+  success(res, HttpStatus.CREATED, populatedTour, 'tour');
 });
 
 export const getTour = catchAsync(async (req, res, next) => {
@@ -42,7 +44,9 @@ export const updateTour = catchAsync(async (req, res, next) => {
   Object.assign(tour, req.body);
   await tour.save(); // Save the updated tour to the database to trigger the pre-save middleware
 
-  success(res, HttpStatus.OK, tour, 'tour');
+  const populatedTour = await Tour.findById(tour._id);
+
+  success(res, HttpStatus.OK, populatedTour, 'tour');
 });
 
 export const deleteTour = catchAsync(async (req, res, next) => {
