@@ -206,3 +206,43 @@ export const updatePassword = catchAsync(async (req, res, next) => {
     'Password Updated Successfully',
   );
 });
+
+export const updateCurrentUserProfile = catchAsync(async (req, res, next) => {
+  // 1. Check if password update is requested
+  const { password } = req.body;
+  if (password) {
+    return next(
+      new HttpError(
+        "Password updates are not allowed through this endpoint. To update your password, please use the '/api/users/update-password' endpoint.",
+        HttpStatus.BAD_REQUEST,
+      ),
+    );
+  }
+
+  // 2. Filter and sanitize input fields to prevent unauthorized data injection
+  const filteredBody = filterObjectFields(req.body, ['name', 'email', 'photo', 'role']);
+
+  // 3. Check if there is no any valid fields to update
+  const modifiedFields = Object.keys(filteredBody).length;
+  if (!modifiedFields) {
+    return next(
+      new HttpError('No valid fields provided in the request body', HttpStatus.BAD_REQUEST),
+    );
+  }
+
+  // 4. Merge the filtered fields into the user's current data
+  Object.assign(req.user, filteredBody);
+  await req.user.save();
+
+  // 6. Filter user document to remove sensitive information from the response
+  const filteredUser = filterDocumentFields(req.user, ['name', 'email', 'photo', 'role']);
+
+  success(
+    res,
+    HttpStatus.ACCEPTED,
+    filteredUser,
+    'user',
+    generateToken(req.user._id),
+    'You data updated successfully',
+  );
+});

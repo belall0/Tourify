@@ -4,19 +4,17 @@ import * as authController from '../controllers/authController.js';
 
 const router = express.Router();
 
+router.use(authController.protectRoute);
+
 router
   .route('/')
-  .get(authController.protectRoute, tourController.getAllTours)
-  .post(tourController.createTour);
+  .get(tourController.getAllTours)
+  .post(authController.restrictTo('admin', 'lead-guide'), tourController.createTour);
 
 router
   .route('/:id')
   .get(tourController.getTour)
-  .patch(tourController.updateTour)
-  .delete(
-    authController.protectRoute,
-    authController.restrictTo('admin', 'lead-guide'),
-    tourController.deleteTour,
-  );
+  .patch(authController.restrictTo('admin'), tourController.updateTour)
+  .delete(authController.restrictTo('admin'), tourController.deleteTour);
 
 export default router;

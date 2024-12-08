@@ -1,6 +1,6 @@
 # Tourify
 
-## overview
+## Overview
 
 Tourify is a RESTful API for managing tours, designed with readability, maintainability, and scalability in mind.
 
@@ -19,25 +19,10 @@ Tourify is a RESTful API for managing tours, designed with readability, maintain
 
 - RESTful architecture with well-defined endpoints ensuring seamless integration with any client.
 - MVC architecture for easy maintenance and scalability.
-- CRUD functionality for tours
-- Advanced filtering, sorting, and pagination for tours.
-  - Filtering by fields and ranges.
-  - Sorting by single or multiple fields.
-  - Pagination for handling large datasets.
-  - Field inclusion/exclusion for optimized responses.
+- CRUD functionalities for many resources.
+- Advanced filtering, sorting, and pagination.
 - Error handling with centralized error handling middleware.
-  - Add error class for operational errors.
-  - **catchAsync Utility**: Wraps async route handlers to catch and forward errors, eliminating repetitive `try...catch`
-  - Differentiation between operational and programming errors.
-  - Detailed error messages in development mode and generic messages in production mode.
-  - Mongoose Error Handling: Custom error handling for many Mongoose errors.
 - Authentication and Authorization
-  - User signup and login.
-  - JWT token generation and verification.
-  - Protect routes with middleware.
-  - Authorization based on user roles.
-  - Password reset functionality
-  - Password change functionality
 
 ---
 
@@ -73,11 +58,19 @@ npm install
 4- Create a `.env` file in the root directory and add the following environment variables:
 
 ```bash
-NODE_ENV=production/development
+NODE_ENV=production
 PORT=3000
+
 DATABASE_URL=<your_mongodb_uri>
+
 JWT_SECRET=<your_secret_key>
 JWT_EXPIRES_IN=90d
+JWT_COOKIE_EXPIRES_IN=90
+
+EMAIL_HOST=<your_email_host>
+EMAIL_PORT=<your_email_port>
+EMAIL_USERNAME=<your_email_username>
+EMAIL_PASSWORD=<your_email_password>
 ```
 
 5- Start the server:
@@ -96,20 +89,21 @@ API will be running on `http://localhost:3000`.
 
 | Method | Endpoint       | Description             |
 | ------ | -------------- | ----------------------- |
-| GET    | /api/tours     | Get all tours           |
+| POST   | /api/tours/    | Create a new tour       |
+| GET    | /api/tours/    | Get all tours           |
 | GET    | /api/tours/:id | Get a single tour by ID |
-| POST   | /api/tours     | Create a new tour       |
 | PATCH  | /api/tours/:id | Update a tour by ID     |
 | DELETE | /api/tours/:id | Delete a tour by ID     |
 
 ### Users
 
-| Method | Endpoint                   | Description            |
-| ------ | -------------------------- | ---------------------- |
-| POST   | /api/users/signup          | Create a new user      |
-| POST   | /api/users/login           | Login an existing user |
-| POST   | /api/users/forgot-password | Forgot password        |
-| PATCH  | /api/users/reset-password  | Reset password         |
-| PATCH  | /api/users/update-password | Update password        |
+| Method | Endpoint                         | Description            |
+| ------ | -------------------------------- | ---------------------- |
+| POST   | /api/users/signup                | Create a new user      |
+| POST   | /api/users/login                 | Login an existing user |
+| POST   | /api/users/forgot-password       | Forgot password        |
+| POST   | /api/users/reset-password/:token | Reset password         |
+| PATCH  | /api/users/update-password       | Update password        |
+| PATCH  | /api/users/profile               | Update user details    |
 
 ---
