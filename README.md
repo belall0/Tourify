@@ -126,4 +126,11 @@ API will be running on `http://localhost:3000`.
 | PATCH  | /api/tours/:id | Update a tour by ID     |
 | DELETE | /api/tours/:id | Delete a tour by ID     |
 
+### Reviews
+
+| Method | Endpoint               | Description                |
+| ------ | ---------------------- | -------------------------- |
+| POST   | /api/tours/:id/reviews | Create a review for a tour |
+| GET    | /api/tours/:id/reviews | Get all reviews for a tour |
+
 ---

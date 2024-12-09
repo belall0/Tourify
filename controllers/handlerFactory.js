@@ -9,10 +9,10 @@ export const createOne = (Model) =>
     success(res, HttpStatus.CREATED, doc, Model.modelName.toLowerCase());
   });
 
-export const getAll = (Model) =>
+export const getAll = (Model, filterObj = {}) =>
   catchAsync(async (req, res, next) => {
     // 1. Initialize query
-    let query = Model.find().setOptions({ skipPopulation: true }); // Skip population for performance
+    let query = Model.find(filterObj).setOptions({ skipPopulation: true }); // Skip population for performance
 
     // 2. Build query: filter, sort, paginate, select
     query = APIFeatures.filter(query, req.query);
