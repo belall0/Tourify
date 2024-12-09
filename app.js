@@ -5,12 +5,14 @@ import globalMiddlewareHandler from './middlewares/errorMiddleware.js';
 
 import tourRoutes from './routes/tourRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 
 const app = express();
 app.use(express.json());
 
 app.use('/api/tours', tourRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // 404 handler
 app.all('*', (req, res, next) => {

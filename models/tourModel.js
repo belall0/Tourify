@@ -164,6 +164,12 @@ const tourSchema = new mongoose.Schema(
   },
 );
 
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'tour',
+});
+
 // MIDDLEWARES
 tourSchema.pre('save', async function (next) {
   this.slug = slugify(this.name, { lower: true });
