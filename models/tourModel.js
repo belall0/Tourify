@@ -185,9 +185,7 @@ tourSchema.pre('save', async function (next) {
     if (existingGuides.length !== this.guides.length) {
       const existingGuidesIds = existingGuides.map((guide) => guide._id.toString());
 
-      const missingGuides = this.guides.filter(
-        (guideId) => !existingGuidesIds.includes(guideId.toString()),
-      );
+      const missingGuides = this.guides.filter((guideId) => !existingGuidesIds.includes(guideId.toString()));
 
       return next(new HttpError(`No guide(s) found with id(s): ${missingGuides.join(', ')}`, 404));
     }
@@ -197,6 +195,11 @@ tourSchema.pre('save', async function (next) {
 });
 
 tourSchema.pre(/^find/, function (next) {
+  // Skip population if the query options specify to do so
+  if (this.options.skipPopulation) {
+    return next();
+  }
+
   this.populate({
     path: 'guides',
     select: 'name email -_id',
