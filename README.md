@@ -85,15 +85,15 @@ API will be running on `http://localhost:3000`.
 
 ## API Endpoints
 
-### Tours
+### Admin: Users
 
-| Method | Endpoint       | Description             |
-| ------ | -------------- | ----------------------- |
-| POST   | /api/tours/    | Create a new tour       |
-| GET    | /api/tours/    | Get all tours           |
-| GET    | /api/tours/:id | Get a single tour by ID |
-| PATCH  | /api/tours/:id | Update a tour by ID     |
-| DELETE | /api/tours/:id | Delete a tour by ID     |
+| Method | Endpoint      | Description             |
+| ------ | ------------- | ----------------------- |
+| GET    | api/users/    | Get all users           |
+| POST   | api/users/    | Create a new user       |
+| GET    | api/users/:id | Get a single user by ID |
+| PATCH  | api/users/:id | Update a user by ID     |
+| DELETE | api/users/:id | Delete a user by ID     |
 
 ### Users
 
@@ -105,5 +105,15 @@ API will be running on `http://localhost:3000`.
 | POST   | /api/users/reset-password/:token | Reset password         |
 | PATCH  | /api/users/update-password       | Update password        |
 | PATCH  | /api/users/profile               | Update user details    |
+
+### Tours
+
+| Method | Endpoint       | Description             |
+| ------ | -------------- | ----------------------- |
+| POST   | /api/tours/    | Create a new tour       |
+| GET    | /api/tours/    | Get all tours           |
+| GET    | /api/tours/:id | Get a single tour by ID |
+| PATCH  | /api/tours/:id | Update a tour by ID     |
+| DELETE | /api/tours/:id | Delete a tour by ID     |
 
 ---

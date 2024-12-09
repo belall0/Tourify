@@ -4,13 +4,11 @@ import * as authController from '../controllers/authController.js';
 
 const router = express.Router({ mergeParams: true });
 
+router.use(authController.protectRoute);
+
 router
   .route('/')
   .get(reviewController.getAllReviews)
-  .post(
-    authController.protectRoute,
-    authController.restrictTo('user'),
-    reviewController.createReview,
-  );
+  .post(authController.restrictTo('user'), reviewController.createReview);
 
 export default router;
