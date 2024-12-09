@@ -46,6 +46,11 @@ const reviewSchema = new mongoose.Schema(
 );
 
 reviewSchema.pre(/^find/, function (next) {
+  // Skip population if the query options specify to do so
+  if (this.options.skipPopulation) {
+    return next();
+  }
+
   this.populate({
     path: 'user',
     select: 'name photo',

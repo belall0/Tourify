@@ -95,6 +95,16 @@ API will be running on `http://localhost:3000`.
 | PATCH  | api/users/:id | Update a user by ID     |
 | DELETE | api/users/:id | Delete a user by ID     |
 
+### Admin: Reviews
+
+| Method | Endpoint        | Description        |
+| ------ | --------------- | ------------------ |
+| POST   | api/reviews/    | Create a review    |
+| GET    | api/reviews/    | Get all reviews    |
+| GET    | api/reviews/:id | Get a review by ID |
+| PATCH  | api/reviews/:id | Update a review    |
+| DELETE | api/reviews/:id | Delete a review    |
+
 ### Users
 
 | Method | Endpoint                         | Description            |
