@@ -28,9 +28,14 @@ export const getAll = (Model, options = {}) =>
     success(res, HttpStatus.OK, docs, Model.modelName.toLowerCase() + '(s)');
   });
 
-export const getOne = (Model) =>
+export const getOne = (Model, options = {}) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.findById(req.params.id);
+    const { populateOptions } = options;
+
+    const query = Model.findById(req.params.id);
+    if (populateOptions) query.populate(populateOptions);
+
+    const doc = await query;
     if (!doc)
       return next(
         new HttpError(`No ${Model.modelName.toLowerCase()} found with id: ${req.params.id}`, HttpStatus.NOT_FOUND),
