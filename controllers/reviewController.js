@@ -9,10 +9,10 @@ export const setTourUserIds = (req, res, next) => {
 };
 
 export const getAllReviews = (req, res, next) => {
-  let filter = {};
-  if (req.params.tourId) filter = { tour: req.params.tourId };
+  let filterObj = {};
+  if (req.params.tourId) filterObj = { tour: req.params.tourId };
 
-  return factory.getAll(Review, filter)(req, res, next); // Call the getAll function with the filter
+  return factory.getAll(Review, { filterObj, populate: true })(req, res, next); // Call the getAll function with the filter
 };
 
 export const createReview = factory.createOne(Review);
