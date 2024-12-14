@@ -4,9 +4,8 @@
 
 1. **Account Registration**: As a user, I want to be able to sign up for an account, enabling me to begin using the application.
 2. **Account Login**: As a user, I want to be able to log in to my account to gain access to the application's features and functionality.
-3. **Account Logout**: As a user, I want to be able to log out of my account to prevent unauthorized access to my account.
-4. **Password Reset**: As a user, I want to be able to reset my password in the event that I forget it.
-5. **Password Update**: As a user, I want to be able to update my password to maintain account security.
+3. **Password Reset**: As a user, I want to be able to reset my password in the event that I forget it.
+4. **Password Update**: As a user, I want to be able to update my password to maintain account security.
 
 ## Profile
 
