@@ -87,51 +87,43 @@ API will be running on `http://localhost:3000`.
 
 ### Authentication: All Users
 
-| Method | Endpoint                         | Description            | Auth Required |
-| ------ | -------------------------------- | ---------------------- | ------------- |
-| POST   | /api/users/signup                | Create a new user      | No            |
-| POST   | /api/users/login                 | Login an existing user | No            |
-| POST   | /api/users/forgot-password       | Forgot password        | No            |
-| POST   | /api/users/reset-password/:token | Reset password         | No            |
-| PUT    | /api/users/update-password       | Update password        | Yes           |
+| Method | Endpoint                         | Description            | Auth Required | Permissions |
+| ------ | -------------------------------- | ---------------------- | ------------- | ----------- |
+| POST   | /api/users/signup                | Create a new user      | No            | None        |
+| POST   | /api/users/login                 | Login an existing user | No            | None        |
+| POST   | /api/users/forgot-password       | Forgot password        | No            | None        |
+| POST   | /api/users/reset-password/:token | Reset password         | No            | None        |
+| PUT    | /api/users/update-password       | Update password        | Yes           | None        |
 
 ### Profile : All Users
 
-| Method | Endpoint      | Description         | Auth Required |
-| ------ | ------------- | ------------------- | ------------- |
-| GET    | /api/users/me | Get current user    | Yes           |
-| PUT    | /api/users/me | Update current user | Yes           |
-| DELETE | /api/users/me | Delete current user | Yes           |
+| Method | Endpoint      | Description         | Auth Required | Permissions |
+| ------ | ------------- | ------------------- | ------------- | ----------- |
+| GET    | /api/users/me | Get current user    | Yes           | None        |
+| PUT    | /api/users/me | Update current user | Yes           | None        |
+| DELETE | /api/users/me | Delete current user | Yes           | None        |
 
 ### Profile : Admin
 
-| Method | Endpoint       | Description       | Auth Required |
-| ------ | -------------- | ----------------- | ------------- |
-| GET    | /api/users     | Get all users     | Yes           |
-| GET    | /api/users/:id | Get a single user | Yes           |
-| DELETE | /api/users/:id | Delete a user     | Yes           |
+| Method | Endpoint       | Description       | Auth Required | Permissions |
+| ------ | -------------- | ----------------- | ------------- | ----------- |
+| GET    | /api/users     | Get all users     | Yes           | Admin       |
+| GET    | /api/users/:id | Get a single user | Yes           | Admin       |
+| DELETE | /api/users/:id | Delete a user     | Yes           | Admin       |
 
 ---
 
 ### Tour : All users
 
-| Method | Endpoint       | Description       | Auth Required |
-| ------ | -------------- | ----------------- | ------------- |
-| GET    | /api/tours     | Get all tours     | No            |
-| GET    | /api/tours/:id | Get a single tour | No            |
+| Method | Endpoint       | Description       | Auth Required | Permissions |
+| ------ | -------------- | ----------------- | ------------- | ----------- |
+| GET    | /api/tours     | Get all tours     | No            | None        |
+| GET    | /api/tours/:id | Get a single tour | No            | None        |
 
 ### Tour : Operators
 
-| Method | Endpoint      | Description       | Auth Required |
-| ------ | ------------- | ----------------- | ------------- |
-| POST   | /api/tours    | Create a new tour | Yes           |
-| PUT    | /api/tours:id | Update a tour     | Yes           |
-| DELETE | /api/tours:id | Delete a tour     | Yes           |
-
-### Tour: Admin
-
-| Method | Endpoint      | Description   | Auth Required |
-| ------ | ------------- | ------------- | ------------- |
-| DELETE | /api/tours:id | Delete a tour | Yes           |
-
----
+| Method | Endpoint      | Description       | Auth Required | Permissions     |
+| ------ | ------------- | ----------------- | ------------- | --------------- |
+| POST   | /api/tours    | Create a new tour | Yes           | Operator        |
+| PUT    | /api/tours:id | Update a tour     | Yes           | Operator        |
+| DELETE | /api/tours:id | Delete a tour     | Yes           | Operator, Admin |
