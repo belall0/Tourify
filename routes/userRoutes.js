@@ -18,4 +18,10 @@ router
   .put(authController.protectRoute, userController.setUserId, userController.updateCurrentUser)
   .delete(authController.protectRoute, userController.setUserId, userController.deleteCurrentUser);
 
+// Admin routes
+router.route('/').get(authController.protectRoute, authController.restrictTo('admin'), userController.getAllUsers);
+router
+  .route('/:id')
+  .get(authController.protectRoute, authController.restrictTo('admin'), userController.getUserById)
+  .delete(authController.protectRoute, authController.restrictTo('admin'), userController.deleteUserById);
 export default router;

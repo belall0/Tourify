@@ -103,6 +103,14 @@ API will be running on `http://localhost:3000`.
 | PUT    | /api/users/me | Update current user | Yes           |
 | DELETE | /api/users/me | Delete current user | Yes           |
 
+### Profile : Admin
+
+| Method | Endpoint       | Description       | Auth Required |
+| ------ | -------------- | ----------------- | ------------- |
+| GET    | /api/users     | Get all users     | Yes           |
+| GET    | /api/users/:id | Get a single user | Yes           |
+| DELETE | /api/users/:id | Delete a user     | Yes           |
+
 ---
 
 ### Tour : All users

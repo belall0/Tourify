@@ -35,6 +35,7 @@ export const updatePassword = catchAsync(async (req, res, next) => {
 
   success(res, HttpStatus.OK, null, null, generateToken(req.user._id), 'Password Updated Successfully');
 });
+
 export const updateCurrentUser = catchAsync(async (req, res, next) => {
   // 1. Check if password update is requested
   const { password } = req.body;
@@ -68,3 +69,8 @@ export const updateCurrentUser = catchAsync(async (req, res, next) => {
 
 export const getCurrentUser = factory.getOne(User);
 export const deleteCurrentUser = factory.deleteOne(User);
+
+// Admin Routes
+export const getAllUsers = factory.getAll(User);
+export const getUserById = factory.getOne(User);
+export const deleteUserById = factory.deleteOne(User);
