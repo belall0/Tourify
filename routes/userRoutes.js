@@ -8,24 +8,14 @@ const router = express.Router();
 router.post('/signup', authController.signup);
 router.post('/login', authController.login);
 router.post('/forgot-password', authController.forgotPassword);
-router.patch('/reset-password/:token', authController.resetPassword);
+router.put('/reset-password/:token', authController.resetPassword);
+router.put('/update-password', authController.protectRoute, userController.updatePassword);
 
 // Protected routes
-router.use(authController.protectRoute);
-
-router.patch('/update-password', userController.updatePassword);
-router.patch('/profile', userController.updateCurrentUserProfile);
-
-// Admin Only
-router.use(authController.restrictTo('admin'));
 router
-  .route('/')
-  .get(userController.getAllUsers)
-  .post(userController.createUser);
-router
-  .route('/:id')
-  .get(userController.getUser)
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser);
+  .route('/me')
+  .get(authController.protectRoute, userController.setUserId, userController.getCurrentUser)
+  .put(authController.protectRoute, userController.setUserId, userController.updateCurrentUser)
+  .delete(authController.protectRoute, userController.setUserId, userController.deleteCurrentUser);
 
 export default router;

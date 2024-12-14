@@ -85,36 +85,25 @@ API will be running on `http://localhost:3000`.
 
 ## API Endpoints
 
-### Admin: Users
+### Authentication
 
-| Method | Endpoint      | Description             |
-| ------ | ------------- | ----------------------- |
-| GET    | api/users/    | Get all users           |
-| POST   | api/users/    | Create a new user       |
-| GET    | api/users/:id | Get a single user by ID |
-| PATCH  | api/users/:id | Update a user by ID     |
-| DELETE | api/users/:id | Delete a user by ID     |
+| Method | Endpoint                         | Description            | Auth Required |
+| ------ | -------------------------------- | ---------------------- | ------------- |
+| POST   | /api/users/signup                | Create a new user      | No            |
+| POST   | /api/users/login                 | Login an existing user | No            |
+| POST   | /api/users/forgot-password       | Forgot password        | No            |
+| POST   | /api/users/reset-password/:token | Reset password         | No            |
+| PUT    | /api/users/update-password       | Update password        | Yes           |
 
-### Admin: Reviews
+### Profile Management
 
-| Method | Endpoint        | Description        |
-| ------ | --------------- | ------------------ |
-| POST   | api/reviews/    | Create a review    |
-| GET    | api/reviews/    | Get all reviews    |
-| GET    | api/reviews/:id | Get a review by ID |
-| PATCH  | api/reviews/:id | Update a review    |
-| DELETE | api/reviews/:id | Delete a review    |
+| Method | Endpoint      | Description         | Auth Required |
+| ------ | ------------- | ------------------- | ------------- |
+| GET    | /api/users/me | Get current user    | Yes           |
+| PUT    | /api/users/me | Update current user | Yes           |
+| DELETE | /api/users/me | Delete current user | Yes           |
 
-### Users
-
-| Method | Endpoint                         | Description            |
-| ------ | -------------------------------- | ---------------------- |
-| POST   | /api/users/signup                | Create a new user      |
-| POST   | /api/users/login                 | Login an existing user |
-| POST   | /api/users/forgot-password       | Forgot password        |
-| POST   | /api/users/reset-password/:token | Reset password         |
-| PATCH  | /api/users/update-password       | Update password        |
-| PATCH  | /api/users/profile               | Update user details    |
+---
 
 ### Tours
 
@@ -134,3 +123,23 @@ API will be running on `http://localhost:3000`.
 | GET    | /api/tours/:id/reviews | Get all reviews for a tour |
 
 ---
+
+### Admin: Users
+
+| Method | Endpoint      | Description             |
+| ------ | ------------- | ----------------------- |
+| GET    | api/users/    | Get all users           |
+| POST   | api/users/    | Create a new user       |
+| GET    | api/users/:id | Get a single user by ID |
+| PATCH  | api/users/:id | Update a user by ID     |
+| DELETE | api/users/:id | Delete a user by ID     |
+
+### Admin: Reviews
+
+| Method | Endpoint        | Description        |
+| ------ | --------------- | ------------------ |
+| POST   | api/reviews/    | Create a review    |
+| GET    | api/reviews/    | Get all reviews    |
+| GET    | api/reviews/:id | Get a review by ID |
+| PATCH  | api/reviews/:id | Update a review    |
+| DELETE | api/reviews/:id | Delete a review    |

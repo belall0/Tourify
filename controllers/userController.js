@@ -6,7 +6,11 @@ import { HttpStatus, success } from '../utils/responseHandler.js';
 import { generateToken } from '../utils/jwtUtils.js';
 import { filterObjectFields, filterDocumentFields } from '../utils/dataFilter.js';
 
-// User Operations
+export const setUserId = (req, res, next) => {
+  req.params.id = req.user._id;
+  next();
+};
+
 export const updatePassword = catchAsync(async (req, res, next) => {
   // 1. Check if both currentPassword and newPassword are provided in the request.
   const { currentPassword, newPassword } = req.body;
@@ -31,8 +35,7 @@ export const updatePassword = catchAsync(async (req, res, next) => {
 
   success(res, HttpStatus.OK, null, null, generateToken(req.user._id), 'Password Updated Successfully');
 });
-
-export const updateCurrentUserProfile = catchAsync(async (req, res, next) => {
+export const updateCurrentUser = catchAsync(async (req, res, next) => {
   // 1. Check if password update is requested
   const { password } = req.body;
   if (password) {
@@ -63,9 +66,5 @@ export const updateCurrentUserProfile = catchAsync(async (req, res, next) => {
   success(res, HttpStatus.ACCEPTED, filteredUser, 'user', generateToken(req.user._id), 'You data updated successfully');
 });
 
-// CRUD Operations for Admin
-export const getAllUsers = factory.getAll(User);
-export const getUser = factory.getOne(User);
-export const createUser = factory.createOne(User);
-export const updateUser = factory.updateOne(User);
-export const deleteUser = factory.deleteOne(User);
+export const getCurrentUser = factory.getOne(User);
+export const deleteCurrentUser = factory.deleteOne(User);

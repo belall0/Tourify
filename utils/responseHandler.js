@@ -1,3 +1,5 @@
+import { filterObjectFields, filterDocumentFields } from '../utils/dataFilter.js';
+
 const HttpStatus = {
   // Success responses
   OK: 200,
@@ -21,20 +23,16 @@ const HttpStatus = {
   GATEWAY_TIMEOUT: 504,
 };
 
-const success = (
-  res,
-  status = HttpStatus.OK,
-  data = null,
-  key = 'data',
-  token = null,
-  message = null,
-) => {
+const success = (res, status = HttpStatus.OK, data = null, key = 'data', token = null, message = null) => {
   const response = {
     status: 'success',
   };
 
-  if (token) {
-    response.token = token;
+  if (token) response.token = token;
+
+  // Filter user document to remove sensitive information from the response
+  if (data && key === 'user') {
+    data = filterDocumentFields(data, ['name', 'email', 'photo', 'role']);
   }
 
   if (status !== HttpStatus.NO_CONTENT && data) {
@@ -42,9 +40,7 @@ const success = (
     response.data = { [key]: data };
   }
 
-  if (message) {
-    response.message = message;
-  }
+  if (message) response.message = message;
 
   return res.status(status).json(response);
 };
