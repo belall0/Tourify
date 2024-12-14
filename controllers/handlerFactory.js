@@ -5,6 +5,9 @@ import HttpError from '../utils/httpError.js';
 
 export const createOne = (Model) =>
   catchAsync(async (req, res, next) => {
+    // Add owner field to the request body if the model is 'Tour'
+    if (Model.modelName.toLowerCase() === 'tour') req.body.owner = req.user.id;
+
     const doc = await Model.create(req.body);
     success(res, HttpStatus.CREATED, doc, Model.modelName.toLowerCase());
   });
@@ -52,6 +55,12 @@ export const updateOne = (Model) =>
         new HttpError(`No ${Model.modelName.toLowerCase()} found with id: ${req.params.id}`, HttpStatus.NOT_FOUND),
       );
 
+    // Check ownership of the resource before updating if it is a 'Tour'
+    if (Model.modelName.toLowerCase() === 'tour' && doc.owner.toString() !== req.user.id)
+      return next(
+        new HttpError(`You are not authorized to modify this ${Model.modelName.toLowerCase()}`, HttpStatus.FORBIDDEN),
+      );
+
     Object.assign(doc, req.body);
     doc = await doc.save(); // Save the updated tour to the database to trigger the pre-save middleware
 
@@ -60,11 +69,22 @@ export const updateOne = (Model) =>
 
 export const deleteOne = (Model) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.findByIdAndDelete(req.params.id);
+    // 1. Find document by id
+    const doc = await Model.findById(req.params.id).setOptions({ skipPopulation: true });
     if (!doc)
       return next(
         new HttpError(`No ${Model.modelName.toLowerCase()} found with id: ${req.params.id}`, HttpStatus.NOT_FOUND),
       );
 
+    // 2. Check ownership of the resource before deleting if it is a 'Tour'
+    if (Model.modelName.toLowerCase() === 'tour' && doc.owner.toString() !== req.user.id && req.user.role !== 'admin')
+      return next(
+        new HttpError(`You are not authorized to delete this ${Model.modelName.toLowerCase()}`, HttpStatus.FORBIDDEN),
+      );
+
+    // 3. Delete document
+    await doc.deleteOne();
+
+    // 4. Send response
     success(res, HttpStatus.NO_CONTENT);
   });

@@ -149,6 +149,11 @@ const tourSchema = new mongoose.Schema(
       },
     ],
 
+    owner: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
+    },
+
     guides: [
       {
         type: mongoose.Schema.ObjectId,
@@ -202,6 +207,9 @@ tourSchema.pre(/^find/, function (next) {
 
   this.populate({
     path: 'guides',
+    select: 'name email -_id',
+  }).populate({
+    path: 'owner',
     select: 'name email -_id',
   });
 

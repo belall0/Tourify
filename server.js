@@ -5,7 +5,5 @@ await connectDB();
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, 'localhost', () => {
-  console.log(
-    `Server is running on http://localhost:${PORT} in ${process.env.NODE_ENV} environment`,
-  );
+  console.log(`Server is running on http://localhost:${PORT} in ${process.env.NODE_ENV} environment`);
 });

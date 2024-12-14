@@ -85,7 +85,7 @@ API will be running on `http://localhost:3000`.
 
 ## API Endpoints
 
-### Authentication
+### Authentication: All Users
 
 | Method | Endpoint                         | Description            | Auth Required |
 | ------ | -------------------------------- | ---------------------- | ------------- |
@@ -95,7 +95,7 @@ API will be running on `http://localhost:3000`.
 | POST   | /api/users/reset-password/:token | Reset password         | No            |
 | PUT    | /api/users/update-password       | Update password        | Yes           |
 
-### Profile Management
+### Profile : All Users
 
 | Method | Endpoint      | Description         | Auth Required |
 | ------ | ------------- | ------------------- | ------------- |
@@ -105,41 +105,25 @@ API will be running on `http://localhost:3000`.
 
 ---
 
-### Tours
+### Tour : All users
 
-| Method | Endpoint       | Description             |
-| ------ | -------------- | ----------------------- |
-| POST   | /api/tours/    | Create a new tour       |
-| GET    | /api/tours/    | Get all tours           |
-| GET    | /api/tours/:id | Get a single tour by ID |
-| PATCH  | /api/tours/:id | Update a tour by ID     |
-| DELETE | /api/tours/:id | Delete a tour by ID     |
+| Method | Endpoint       | Description       | Auth Required |
+| ------ | -------------- | ----------------- | ------------- |
+| GET    | /api/tours     | Get all tours     | No            |
+| GET    | /api/tours/:id | Get a single tour | No            |
 
-### Reviews
+### Tour : Operators
 
-| Method | Endpoint               | Description                |
-| ------ | ---------------------- | -------------------------- |
-| POST   | /api/tours/:id/reviews | Create a review for a tour |
-| GET    | /api/tours/:id/reviews | Get all reviews for a tour |
+| Method | Endpoint      | Description       | Auth Required |
+| ------ | ------------- | ----------------- | ------------- |
+| POST   | /api/tours    | Create a new tour | Yes           |
+| PUT    | /api/tours:id | Update a tour     | Yes           |
+| DELETE | /api/tours:id | Delete a tour     | Yes           |
+
+### Tour: Admin
+
+| Method | Endpoint      | Description   | Auth Required |
+| ------ | ------------- | ------------- | ------------- |
+| DELETE | /api/tours:id | Delete a tour | Yes           |
 
 ---
-
-### Admin: Users
-
-| Method | Endpoint      | Description             |
-| ------ | ------------- | ----------------------- |
-| GET    | api/users/    | Get all users           |
-| POST   | api/users/    | Create a new user       |
-| GET    | api/users/:id | Get a single user by ID |
-| PATCH  | api/users/:id | Update a user by ID     |
-| DELETE | api/users/:id | Delete a user by ID     |
-
-### Admin: Reviews
-
-| Method | Endpoint        | Description        |
-| ------ | --------------- | ------------------ |
-| POST   | api/reviews/    | Create a review    |
-| GET    | api/reviews/    | Get all reviews    |
-| GET    | api/reviews/:id | Get a review by ID |
-| PATCH  | api/reviews/:id | Update a review    |
-| DELETE | api/reviews/:id | Delete a review    |
