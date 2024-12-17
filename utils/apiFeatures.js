@@ -37,7 +37,7 @@ class APIFeatures {
       return query.select(fields);
     }
 
-    return query;
+    return query.select();
   }
 }
 
