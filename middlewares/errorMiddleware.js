@@ -35,7 +35,7 @@ const globalMiddlewareHandler = (err, req, res, next) => {
 
   if (ENV === 'development') {
     sendErrorDev(err, res);
-  } else if (ENV === 'production') {
+  } else if (ENV === 'production' || ENV === 'test') {
     // handle Mongoose errors
     if (err.name === 'CastError') err = mongooseErrorHandler.handleDBCastError(err);
     if (err.name === 'ValidationError') err = mongooseErrorHandler.handleDBValidationError(err);
