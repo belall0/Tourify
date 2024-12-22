@@ -57,6 +57,17 @@ export const login = catchAsync(async (req, res, next) => {
   success(res, HttpStatus.OK, null, null, token);
 });
 
+export const logout = catchAsync(async (req, res, next) => {
+  // 1. set the cookie with a dummy token and an expired date in the past
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+
+  // 2. Send response with message
+  success(res, HttpStatus.OK, null, null, null, 'Logged out successfully');
+});
+
 export const protectRoute = catchAsync(async (req, res, next) => {
   // 1. Check if token exists
   let token = '';
