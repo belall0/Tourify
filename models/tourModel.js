@@ -1,8 +1,9 @@
-import mongoose, { mongo } from 'mongoose';
+import mongoose from 'mongoose';
 import slugify from 'slugify';
+import Review from './reviewModel.js';
 import HttpError from '../utils/httpError.js';
 
-// UTILITY FUNCTIONS
+// Remove fields when retrieving data from the database
 const removeFields = function (doc, ret) {
   delete ret.id;
   delete ret.__v;
@@ -11,61 +12,49 @@ const removeFields = function (doc, ret) {
   delete ret.createdAt;
 };
 
-// SCHEMA DEFINITION
 const tourSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'tour name is required'],
-      minLength: [3, 'tour name is too short. It must be at least 3 characters long.'],
-      maxLength: [40, 'tour name is too long. It must be 40 characters or fewer.'],
-      trim: true,
-    },
-
-    slug: {
-      type: String,
+      required: [true, 'Name is required'],
       unique: true,
+      trim: true,
+      minLength: [3, 'Too short (min 3)'],
+      maxLength: [40, 'Too long (max 40)'],
     },
-
+    slug: String,
     duration: {
       type: Number,
-      required: [true, 'tour duration is required'],
-      min: [1, 'tour duration is too short, it must be at least 1 day'],
-      max: [100, 'tour duration is too long, it must be at most 100 days'],
+      required: [true, 'Duration is required'],
     },
-
     maxGroupSize: {
       type: Number,
-      required: [true, 'tour maxGroupSize is required'],
-      min: [1, 'tour maxGroupSize is too small, it must be at least 1 person'],
-      max: [100, 'tour maxGroupSize is too large, it must be at most 100 people'],
+      required: [true, 'Max group size is required'],
     },
-
     difficulty: {
       type: String,
-      required: [true, 'tour difficulty is required'],
+      required: [true, 'Difficulty is required'],
       enum: {
         values: ['easy', 'medium', 'difficult'],
         message: 'Difficulty must be either: easy, medium, or difficult',
       },
     },
-
     ratingsAverage: {
       type: Number,
-      default: 3,
+      default: 4.5,
+      min: [1, 'Rating must be above 1.0'],
+      max: [5, 'Rating must be below 5.0'],
+      set: (val) => Math.round(val * 10) / 10,
     },
-
     ratingsQuantity: {
       type: Number,
       default: 0,
     },
-
     price: {
       type: Number,
-      required: [true, 'tour price is required'],
-      min: [1, 'tour price is too low, it must be at least 1'],
+      required: [true, 'Price is required'],
+      min: [0, 'Price must be positive'],
     },
-
     priceDiscount: {
       type: Number,
       default: 0,
@@ -76,53 +65,31 @@ const tourSchema = new mongoose.Schema(
         message: `Discount price ({VALUE}) should be below the regular price`,
       },
     },
-
     summary: {
       type: String,
       required: [true, 'tour summary is required'],
-      minLength: [10, 'tour summary is too short. It must be at least 10 characters long.'],
-      maxLength: [150, 'tour summary is too long. It must be 150 characters or fewer.'],
       trim: true,
     },
-
     description: {
       type: String,
       trim: true,
     },
-
     imageCover: {
       type: String,
-      required: [true, 'tour imageCover is required'],
+      required: [true, 'Image Cover is required'],
     },
-
-    images: {
-      type: [String],
-    },
-
-    startDates: {
-      type: [Date],
-    },
-
+    images: [String],
+    startDates: [Date],
     startLocation: {
       type: {
         type: String,
         default: 'point',
         enum: ['point'],
       },
-
-      coordinates: {
-        type: [Number], // [latitude, longitude]
-      },
-
-      address: {
-        type: String,
-      },
-
-      description: {
-        type: String,
-      },
+      coordinates: [Number], // [latitude, longitude]
+      address: String,
+      description: String,
     },
-
     locations: [
       {
         type: {
@@ -131,29 +98,16 @@ const tourSchema = new mongoose.Schema(
           enum: ['point'],
         },
 
-        coordinates: {
-          type: [Number], // [latitude, longitude]
-        },
-
-        address: {
-          type: String,
-        },
-
-        description: {
-          type: String,
-        },
-
-        day: {
-          type: Number,
-        },
+        coordinates: [Number], // [latitude, longitude]
+        address: String,
+        description: String,
+        day: Number,
       },
     ],
-
     owner: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',
     },
-
     guides: [
       {
         type: mongoose.Schema.ObjectId,
@@ -161,7 +115,6 @@ const tourSchema = new mongoose.Schema(
       },
     ],
   },
-
   {
     timestamps: true,
     toJSON: { virtuals: true, versionKey: false, transform: removeFields },
@@ -175,7 +128,6 @@ tourSchema.virtual('reviews', {
   foreignField: 'tour',
 });
 
-// MIDDLEWARES
 tourSchema.pre('save', async function (next) {
   this.slug = slugify(this.name, { lower: true });
 
@@ -207,16 +159,14 @@ tourSchema.pre(/^find/, function (next) {
 
   this.populate({
     path: 'guides',
-    select: 'name email -_id',
+    select: 'name email photo role -_id',
   }).populate({
-    path: 'owner',
-    select: 'name email -_id',
+    path: 'reviews',
   });
 
   next();
 });
 
-// MODEL DEFINITION
 const Tour = mongoose.model('Tour', tourSchema);
 
 export default Tour;

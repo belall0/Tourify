@@ -19,8 +19,16 @@ export const signup = catchAsync(async (req, res, next) => {
   // 3. Filter user document to remove sensitive information from the response
   const filteredUser = filterDocumentFields(user, ['name', 'email', 'photo', 'role']);
 
-  // 4. Send successful response with created user data and authentication token
-  success(res, HttpStatus.CREATED, filteredUser, 'user', generateToken(user._id));
+  // 4. generate token
+  const token = generateToken(user._id);
+  // 5. set cookie with token
+  res.cookie('jwt', token, {
+    httpOnly: true,
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+  });
+
+  // 6. Send successful response with created user data and authentication token
+  success(res, HttpStatus.CREATED, filteredUser, 'user', token);
 });
 
 export const login = catchAsync(async (req, res, next) => {
@@ -39,7 +47,13 @@ export const login = catchAsync(async (req, res, next) => {
   // 3. Generate token
   const token = generateToken(user._id);
 
-  // 4. Send response with token
+  // 4. Set cookie with token
+  res.cookie('jwt', token, {
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+  });
+
+  // 5. Send response with token
   success(res, HttpStatus.OK, null, null, token);
 });
 
@@ -48,6 +62,8 @@ export const protectRoute = catchAsync(async (req, res, next) => {
   let token = '';
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   if (!token) {
@@ -72,6 +88,35 @@ export const protectRoute = catchAsync(async (req, res, next) => {
   req.user = currentUser;
   next();
 });
+
+export const checkAuth = async (req, res, next) => {
+  // 1. Check if token exists
+  if (!req.cookies.jwt) {
+    return next();
+  }
+
+  try {
+    // 2. Verify the token
+    const decoded = await promisify(jwt.verify)(req.cookies.jwt, process.env.JWT_SECRET);
+
+    // 3. Check if user still exists
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+      return next();
+    }
+
+    // 4. Check if user changed password after token was issued
+    if (currentUser.isPasswordUpdatedAfter(decoded.iat)) {
+      return next();
+    }
+
+    // 5. render the header based on whether the user is logged in or not
+    res.locals.user = currentUser;
+    return next();
+  } catch (error) {
+    return next();
+  }
+};
 
 export const restrictTo = (...roles) => {
   return (req, res, next) => {
