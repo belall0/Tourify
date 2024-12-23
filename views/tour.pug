@@ -2,8 +2,6 @@ extends base
 
 
 block head
-  script(src='/scripts/mapbox.js', defer)
-  script(src="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.1/maptiler-sdk.umd.js")
   link(href="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.1/maptiler-sdk.css" rel="stylesheet")
 
 
@@ -16,7 +14,6 @@ mixin reviewBox(review)
     .reviews__rating
       each star in [1,2,3,4,5]
         - const status = star <= review.rating ? 'active' : 'inactive'
-        - console.log(status, star, review.rating)
         svg.reviews__star(class= `reviews__star--${status}`)
           use(xlink:href=`/images/icons.svg#icon-star`)
 

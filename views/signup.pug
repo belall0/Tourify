@@ -1,14 +1,10 @@
 extends base
 
-block head
-  script(src='/scripts/login.js' defer)
-  script(src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js" defer)
-
 block content 
   main.main
-    .login-form
+    .login-signup-form
       h2.heading-secondary.ma-bt-lg Create your account!
-      form.form
+      form.form.signup-form
         .form__group
           label.form__label(for='name') Your name
           input#name.form__input(type='text', required)
@@ -18,12 +14,19 @@ block content
           input#email.form__input(type='email', placeholder='you@example.com', required)
 
         .form__group.ma-bt-md
+          label.form__label(for='role') Role
+          select#role.form__input(name='role', required)
+            option(value='customer') Customer
+            option(value='guide') Guide
+            option(value='operator') Operator
+      
+        .form__group.ma-bt-md
           label.form__label(for='password') Password
           input#password.form__input(type='password', placeholder='••••••••', required, minlength='8')
 
         .form__group.ma-bt-md
-          label.form__label(for='passwordConfirm') Confirm password
-          input#passwordConfirm.form__input(type='password', placeholder='••••••••', required, minlength='8')
+          label.form__label(for='confirmPassword') Confirm password
+          input#confirmPassword.form__input(type='password', placeholder='••••••••', required, minlength='8')
         
         .form__group
-          button.btn.btn--green Login
+          button.btn.btn--green Sign up

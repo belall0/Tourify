@@ -100,6 +100,7 @@ export const protectRoute = catchAsync(async (req, res, next) => {
   next();
 });
 
+// only for rendered pages, no errors
 export const checkAuth = async (req, res, next) => {
   // 1. Check if token exists
   if (!req.cookies.jwt) {

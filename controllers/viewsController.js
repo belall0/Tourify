@@ -1,3 +1,4 @@
+import HttpError from '../utils/httpError.js';
 import Tour from './../models/tourModel.js';
 import catchAsync from './../utils/catchAsync.js';
 
@@ -12,6 +13,11 @@ export const getOverview = catchAsync(async (req, res, next) => {
 export const getTour = catchAsync(async (req, res, next) => {
   const slug = req.params.tourSlug;
   const tour = await Tour.findOne({ slug });
+
+  if (!tour) {
+    return next(new HttpError('There is no tour with that name.', 404));
+  }
+
   res.status(200).render('tour', {
     title: `${tour.name} Tour`,
     tour,

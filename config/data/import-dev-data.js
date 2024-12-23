@@ -1,5 +1,24 @@
+/**
+ * This script is used to import or delete data from json files to the database.
+ * It can be run from the command line using the following commands:
+ *
+ * 1. Import data:
+ *   node config/data/import-dev-data.js --import=modelName
+ *
+ * 2. Delete data:
+ *  node config/data/import-dev-data.js --delete=modelName
+ *
+ * 3. Import all data:
+ * node config/data/import-dev-data.js --importAll
+ *
+ * 4. Delete all data:
+ * node config/data/import-dev-data.js --deleteAll
+ *
+ *
+ * Replace modelName with user, tour, or review.
+ */
+
 import fs from 'node:fs';
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import connectDB from './../dbConnection.js';
 import User from './../../models/userModel.js';
@@ -71,6 +90,14 @@ const operationHandler = async () => {
         await deleteReviews();
         break;
     }
+  } else if (command === '--importAll') {
+    await importUsers();
+    await importTours();
+    await importReviews();
+  } else if (command === '--deleteAll') {
+    await deleteUsers();
+    await deleteTours();
+    await deleteReviews();
   }
 
   // 5. exit the process
