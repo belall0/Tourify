@@ -51879,14 +51879,11 @@ var _alertsDefault = parcelHelpers.interopDefault(_alerts);
 const updateProfileData = async (data, type)=>{
     try {
         const url = type === 'password' ? '/api/users/update-password' : '/api/users/me';
-        console.log(url);
         const res = await (0, _axiosDefault.default).put(url, data);
         (0, _alertsDefault.default)('success', res.data.message);
-        console.log(`finished`);
-        return;
-    // setTimeout(() => {
-    //   window.location.assign('/me');
-    // }, 500);
+        setTimeout(()=>{
+            window.location.assign('/me');
+        }, 500);
     } catch (error) {
         (0, _alertsDefault.default)('error', error.response.data.message);
     }

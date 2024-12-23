@@ -3,7 +3,7 @@
  * It can be run from the command line using the following commands:
  *
  * 1. Import data:
- *   node config/data/import-dev-data.js --import=modelName
+ *   node config/data/handle-dev-data.js --import=modelName
  *
  * 2. Delete data:
  *  node config/data/import-dev-data.js --delete=modelName
@@ -20,14 +20,13 @@
 
 import fs from 'node:fs';
 import dotenv from 'dotenv';
-import connectDB from './../dbConnection.js';
-import User from './../../models/userModel.js';
-import Tour from './../../models/tourModel.js';
-import Review from './../../models/reviewModel.js';
-
+import connectDB from '../dbConnection.js';
+import User from '../../models/userModel.js';
+import Tour from '../../models/tourModel.js';
+import Review from '../../models/reviewModel.js';
 dotenv.config();
 
-// GENERIC FUNCTIONS TO IMPORT AND DELETE DATA
+// GENERIC FUNCTIONS
 const importData = (Model) => async () => {
   // 1. Read JSON file
   const data = JSON.parse(fs.readFileSync(`${import.meta.dirname}/${Model.modelName.toLowerCase()}.json`, 'utf-8'));
@@ -53,44 +52,24 @@ const deleteUsers = deleteData(User);
 const deleteTours = deleteData(Tour);
 const deleteReviews = deleteData(Review);
 
+const validCommands = ['--import', '--delete', '--importAll', '--deleteAll'];
+const validModels = ['user', 'tour', 'review'];
+
 const operationHandler = async () => {
-  // 1. read command line arguments
-  const [command, name] = process.argv[2].split('=');
-  // 2. make sure the arguments are valid
-  const isValidCommand = command === '--import' || command === '--delete';
-  const isValidModel = name === 'user' || name === 'tour' || name === 'review';
-  if (!isValidCommand || !isValidModel) {
-    console.log('Invalid command or model name!');
+  // 1. get the command line arguments
+  const [command, modelName] = process.argv[2].split('=');
+
+  // 2. check if the command is valid
+  if (!validCommands.includes(command)) {
+    console.log('Invalid command. Please use --import, --delete, --importAll, or --deleteAll');
     process.exit(1);
   }
+
   // 3. connect to the database
   await connectDB();
+
   // 4. perform the operation
-  if (command === '--import') {
-    switch (name) {
-      case 'user':
-        await importUsers();
-        break;
-      case 'tour':
-        await importTours();
-        break;
-      case 'review':
-        await importReviews();
-        break;
-    }
-  } else if (command === '--delete') {
-    switch (name) {
-      case 'user':
-        await deleteUsers();
-        break;
-      case 'tour':
-        await deleteTours();
-        break;
-      case 'review':
-        await deleteReviews();
-        break;
-    }
-  } else if (command === '--importAll') {
+  if (command === '--importAll') {
     await importUsers();
     await importTours();
     await importReviews();
@@ -98,10 +77,25 @@ const operationHandler = async () => {
     await deleteUsers();
     await deleteTours();
     await deleteReviews();
+  } else {
+    // handle modle specific operations
+    if (!validModels.includes(modelName)) {
+      console.log('Invalid model name. Please use user, tour, or review');
+      process.exit(1);
+    }
+
+    // get the model
+    const Model = modelName === 'user' ? User : modelName === 'tour' ? Tour : Review;
+
+    if (command === '--import') {
+      await importData(Model)();
+    } else if (command === '--delete') {
+      await deleteData(Model)();
+    }
   }
 
   // 5. exit the process
-  process.exit();
+  process.exit(1);
 };
 
 operationHandler();

@@ -29,11 +29,18 @@ export const updatePassword = catchAsync(async (req, res, next) => {
     return next(new HttpError('Current password is incorrect', HttpStatus.UNAUTHORIZED));
   }
 
-  // 3. Update the user's password with the new password provided in the request body. and send a success response to the client
+  // 4. Update the user's password with the new password provided in the request body. and send a success response to the client
   user.password = newPassword;
   await user.save();
 
-  success(res, HttpStatus.OK, null, null, generateToken(req.user._id), 'Password Updated Successfully');
+  // 3. generate a new token for the user and send it in the response
+  const token = generateToken(req.user._id);
+  res.cookie('jwt', token, {
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+  });
+
+  success(res, HttpStatus.OK, null, null, token, 'Password Updated Successfully');
 });
 
 export const updateCurrentUser = catchAsync(async (req, res, next) => {

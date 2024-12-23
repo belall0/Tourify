@@ -70,7 +70,7 @@ userSchema.pre('save', async function (next) {
   }
 
   if (!this.isNew) {
-    this.passwordUpdatedAt = Date.now();
+    this.passwordUpdatedAt = Date.now() - 1000; // to ensure the password is updated before the token is issued
   }
 
   this.password = await bcrypt.hash(this.password, 12);
@@ -89,7 +89,7 @@ userSchema.methods.isPasswordUpdatedAfter = function (JWTTimestamp) {
 
   const passwordChangedTime = parseInt(this.passwordUpdatedAt.getTime() / 1000); // convert to seconds to match JWTTimestamp
   // If JWT timestamp is less than password changed timestamp, it means password was changed after token was issued
-  return JWTTimestamp <= passwordChangedTime;
+  return JWTTimestamp < passwordChangedTime;
 };
 
 userSchema.methods.createPasswordResetToken = function () {
