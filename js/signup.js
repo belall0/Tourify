@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { showAlert } from './alerts';
+import showAlert from './alerts';
 
 const validateForm = (passwordValue, confirmPasswordValue) => {
   // validate confirm password

@@ -605,11 +605,15 @@ var _mapJs = require("./map.js");
 var _mapJsDefault = parcelHelpers.interopDefault(_mapJs);
 var _logoutJs = require("./logout.js");
 var _logoutJsDefault = parcelHelpers.interopDefault(_logoutJs);
+var _updateProfileJs = require("./updateProfile.js");
+var _updateProfileJsDefault = parcelHelpers.interopDefault(_updateProfileJs);
 // DOM ELEMENTS
 const map = document.getElementById('map');
 const loginForm = document.querySelector('.login-form');
 const signupForm = document.querySelector('.signup-form');
 const logoutBtn = document.querySelector('.nav__el--logout');
+const infoForm = document.querySelector('.form-user-data');
+const passwordForm = document.querySelector('.form-user-password');
 // ATTACH EVENT LISTENERS
 if (map) {
     const locations = JSON.parse(map.dataset.locations);
@@ -631,25 +635,51 @@ if (signupForm) signupForm.addEventListener('submit', async (e)=>{
     (0, _signupJsDefault.default)(name, email, role, password, confirmPassword);
 });
 if (logoutBtn) logoutBtn.addEventListener('click', (0, _logoutJsDefault.default));
+if (infoForm) infoForm.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const data = {
+        name,
+        email
+    };
+    (0, _updateProfileJsDefault.default)(data, 'info');
+});
+if (passwordForm) passwordForm.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const currentPassword = document.getElementById('password-current').value;
+    const newPassword = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('password-confirm').value;
+    if (newPassword !== confirmPassword) {
+        alert('Passwords do not match');
+        return false;
+    }
+    const data = {
+        currentPassword,
+        newPassword
+    };
+    (0, _updateProfileJsDefault.default)(data, 'password');
+});
 
-},{"./login.js":"9jZEH","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./map.js":"5VGc0","./signup.js":"jBwuk","./logout.js":"eo6cR"}],"9jZEH":[function(require,module,exports,__globalThis) {
+},{"./login.js":"9jZEH","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./map.js":"5VGc0","./signup.js":"jBwuk","./logout.js":"eo6cR","./updateProfile.js":"fnOQO"}],"9jZEH":[function(require,module,exports,__globalThis) {
 /* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
+var _alertsDefault = parcelHelpers.interopDefault(_alerts);
 const login = async (email, password)=>{
     try {
         const res = await (0, _axiosDefault.default).post('/api/users/login', {
             email,
             password
         });
-        (0, _alerts.showAlert)('success', 'Logged in successfully!');
+        (0, _alertsDefault.default)('success', 'Logged in successfully!');
         setTimeout(()=>{
             window.location.assign('/');
         }, 500);
     } catch (error) {
-        (0, _alerts.showAlert)('error', error.response.data.message);
+        (0, _alertsDefault.default)('error', error.response.data.message);
     }
 };
 exports.default = login;
@@ -5602,8 +5632,6 @@ exports.default = HttpStatusCode;
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"g7ava":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "hideAlert", ()=>hideAlert);
-parcelHelpers.export(exports, "showAlert", ()=>showAlert);
 const hideAlert = ()=>{
     const alterEl = document.querySelector('.alert');
     if (alterEl) alterEl.parentElement.removeChild(alterEl);
@@ -5615,6 +5643,7 @@ const showAlert = (type, message)=>{
     // Hide the newly created alert after 5 seconds
     window.setTimeout(hideAlert, 5000);
 };
+exports.default = showAlert;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5VGc0":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -51792,6 +51821,7 @@ parcelHelpers.defineInteropFlag(exports);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
+var _alertsDefault = parcelHelpers.interopDefault(_alerts);
 const validateForm = (passwordValue, confirmPasswordValue)=>{
     // validate confirm password
     if (passwordValue !== confirmPasswordValue) {
@@ -51811,12 +51841,12 @@ const signup = async (name, email, role, password, confirmPassword)=>{
             password,
             photo: 'default.jpg'
         });
-        (0, _alerts.showAlert)('success', 'Account created successfully!');
+        (0, _alertsDefault.default)('success', 'Account created successfully!');
         setTimeout(()=>{
             window.location.assign('/');
         }, 500);
     } catch (err) {
-        (0, _alerts.showAlert)('error', err.response.data.message);
+        (0, _alertsDefault.default)('error', err.response.data.message);
     }
 };
 exports.default = signup;
@@ -51827,17 +51857,42 @@ parcelHelpers.defineInteropFlag(exports);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
+var _alertsDefault = parcelHelpers.interopDefault(_alerts);
 const logout = async ()=>{
     try {
         const res = await (0, _axiosDefault.default).post('/api/users/logout', {});
-        (0, _alerts.showAlert)('success', 'Logged out successfully!');
-        window.location.reload();
+        (0, _alertsDefault.default)('success', 'Logged out successfully!');
+        window.location.assign('/login');
     } catch (error) {
-        (0, _alerts.showAlert)('error', 'Error logging out! Try again.');
+        (0, _alertsDefault.default)('error', 'Error logging out! Try again.');
     }
 };
 exports.default = logout;
 
-},{"axios":"jo6P5","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./alerts":"g7ava"}]},["3xCCX","1Z4Rq"], "1Z4Rq", "parcelRequire94c2")
+},{"axios":"jo6P5","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./alerts":"g7ava"}],"fnOQO":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _axios = require("axios");
+var _axiosDefault = parcelHelpers.interopDefault(_axios);
+var _alerts = require("./alerts");
+var _alertsDefault = parcelHelpers.interopDefault(_alerts);
+const updateProfileData = async (data, type)=>{
+    try {
+        const url = type === 'password' ? '/api/users/update-password' : '/api/users/me';
+        console.log(url);
+        const res = await (0, _axiosDefault.default).put(url, data);
+        (0, _alertsDefault.default)('success', res.data.message);
+        console.log(`finished`);
+        return;
+    // setTimeout(() => {
+    //   window.location.assign('/me');
+    // }, 500);
+    } catch (error) {
+        (0, _alertsDefault.default)('error', error.response.data.message);
+    }
+};
+exports.default = updateProfileData;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","axios":"jo6P5","./alerts":"g7ava"}]},["3xCCX","1Z4Rq"], "1Z4Rq", "parcelRequire94c2")
 
 //# sourceMappingURL=index.js.map

@@ -35,3 +35,10 @@ export const getSignupForm = catchAsync(async (req, res, next) => {
     title: 'Create your account!',
   });
 });
+
+export const getAccount = catchAsync(async (req, res, next) => {
+  res.status(200).render('account', {
+    title: 'Your account',
+    user: req.user,
+  });
+});

@@ -103,31 +103,27 @@ export const protectRoute = catchAsync(async (req, res, next) => {
 // only for rendered pages, no errors
 export const checkAuth = async (req, res, next) => {
   // 1. Check if token exists
-  if (!req.cookies.jwt) {
+  if (!req.cookies.jwt || req.cookies.jwt === 'loggedout') {
     return next();
   }
 
-  try {
-    // 2. Verify the token
-    const decoded = await promisify(jwt.verify)(req.cookies.jwt, process.env.JWT_SECRET);
+  // 2. Verify the token
+  const decoded = await promisify(jwt.verify)(req.cookies.jwt, process.env.JWT_SECRET);
 
-    // 3. Check if user still exists
-    const currentUser = await User.findById(decoded.id);
-    if (!currentUser) {
-      return next();
-    }
-
-    // 4. Check if user changed password after token was issued
-    if (currentUser.isPasswordUpdatedAfter(decoded.iat)) {
-      return next();
-    }
-
-    // 5. render the header based on whether the user is logged in or not
-    res.locals.user = currentUser;
-    return next();
-  } catch (error) {
+  // 3. Check if user still exists
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
     return next();
   }
+
+  // 4. Check if user changed password after token was issued
+  if (currentUser.isPasswordUpdatedAfter(decoded.iat)) {
+    return next();
+  }
+
+  // 5. render the header based on whether the user is logged in or not
+  res.locals.user = currentUser;
+  return next();
 };
 
 export const restrictTo = (...roles) => {

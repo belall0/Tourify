@@ -21,8 +21,6 @@ const sendErrorDev = (err, req, res) => {
 };
 
 const sendErrorProd = (err, req, res) => {
-  console.log(`a77777777a`);
-  console.log(err);
   if (req.originalUrl.startsWith('/api')) {
     // json response
     if (err.isOperational) {
@@ -39,7 +37,6 @@ const sendErrorProd = (err, req, res) => {
     });
   } else {
     // render error page
-    console.log(`it gets closssssssssse`);
     if (err.isOperational) {
       return res.status(err.statusCode).render('error', {
         status: err.status,
