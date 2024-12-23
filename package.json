@@ -29,11 +29,13 @@
     "@vitest/coverage-v8": "^2.1.8",
     "@vitest/ui": "^2.1.8",
     "axios": "^1.7.9",
+    "buffer": "^6.0.3",
     "eslint": "^9.15.0",
     "globals": "^15.12.0",
     "mongodb-memory-server": "^10.1.2",
     "nodemon": "^3.1.9",
     "parcel": "^2.13.3",
+    "process": "^0.11.10",
     "supertest": "^7.0.0",
     "vitest": "^2.1.8"
   },
