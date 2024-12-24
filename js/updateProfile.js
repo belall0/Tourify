@@ -4,7 +4,11 @@ import showAlert from './alerts';
 const updateProfileData = async (data, type) => {
   try {
     const url = type === 'password' ? '/api/users/update-password' : '/api/users/me';
-    const res = await axios.put(url, data);
+    const res = await axios.put(url, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
     showAlert('success', res.data.message);
     setTimeout(() => {

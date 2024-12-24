@@ -28,5 +28,10 @@ block content
           label.form__label(for='confirmPassword') Confirm password
           input#confirmPassword.form__input(type='password', placeholder='••••••••', required, minlength='8')
         
+        .form__group.ma-bt-md
+          label.form__label(for='profilePicture') Upload Profile Picture:
+          input#profilePicture.form__input.form__uploadFile(type='file', name="photo", accept="image/*" )
+
+
         .form__group
           button.btn.btn--green Sign up

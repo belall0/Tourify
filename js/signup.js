@@ -1,28 +1,23 @@
 import axios from 'axios';
 import showAlert from './alerts';
 
-const validateForm = (passwordValue, confirmPasswordValue) => {
-  // validate confirm password
-  if (passwordValue !== confirmPasswordValue) {
-    alert('Passwords do not match');
-    return false;
-  }
-
-  return true;
-};
-
-const signup = async (name, email, role, password, confirmPassword) => {
-  // validate form
-  if (!validateForm(password, confirmPassword)) return;
-
+const signup = async (name, email, role, password, confirmPassword, photo) => {
   try {
-    const res = await axios.post('/api/users/signup', {
-      name,
-      email,
-      role,
-      password,
-      photo: 'default.jpg',
-    });
+    const res = await axios.post(
+      '/api/users/signup',
+      {
+        name,
+        email,
+        role,
+        password,
+        photo,
+      },
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      },
+    );
 
     showAlert('success', 'Account created successfully!');
 

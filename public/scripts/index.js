@@ -607,13 +607,27 @@ var _logoutJs = require("./logout.js");
 var _logoutJsDefault = parcelHelpers.interopDefault(_logoutJs);
 var _updateProfileJs = require("./updateProfile.js");
 var _updateProfileJsDefault = parcelHelpers.interopDefault(_updateProfileJs);
+console.log(`index.js loaded`);
 // DOM ELEMENTS
 const map = document.getElementById('map');
 const loginForm = document.querySelector('.login-form');
 const signupForm = document.querySelector('.signup-form');
 const logoutBtn = document.querySelector('.nav__el--logout');
-const infoForm = document.querySelector('.form-user-data');
+const settingsForm = document.querySelector('.form-user-data');
 const passwordForm = document.querySelector('.form-user-password');
+const profileImage = document.getElementById('profileImage');
+const uploadImage = document.getElementById('uploadImage');
+if (profileImage || uploadImage) // Add event listener
+uploadImage.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            profileImage.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
 // ATTACH EVENT LISTENERS
 if (map) {
     const locations = JSON.parse(map.dataset.locations);
@@ -632,16 +646,19 @@ if (signupForm) signupForm.addEventListener('submit', async (e)=>{
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
     const role = document.getElementById('role').value;
-    (0, _signupJsDefault.default)(name, email, role, password, confirmPassword);
+    const photo = document.getElementById('profilePicture').files[0];
+    (0, _signupJsDefault.default)(name, email, role, password, confirmPassword, photo);
 });
 if (logoutBtn) logoutBtn.addEventListener('click', (0, _logoutJsDefault.default));
-if (infoForm) infoForm.addEventListener('submit', async (e)=>{
+if (settingsForm) settingsForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
+    const photo = uploadImage.files[0];
     const data = {
         name,
-        email
+        email,
+        photo
     };
     (0, _updateProfileJsDefault.default)(data, 'info');
 });
@@ -5652,24 +5669,18 @@ var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
 var _alertsDefault = parcelHelpers.interopDefault(_alerts);
-const validateForm = (passwordValue, confirmPasswordValue)=>{
-    // validate confirm password
-    if (passwordValue !== confirmPasswordValue) {
-        alert('Passwords do not match');
-        return false;
-    }
-    return true;
-};
-const signup = async (name, email, role, password, confirmPassword)=>{
-    // validate form
-    if (!validateForm(password, confirmPassword)) return;
+const signup = async (name, email, role, password, confirmPassword, photo)=>{
     try {
         const res = await (0, _axiosDefault.default).post('/api/users/signup', {
             name,
             email,
             role,
             password,
-            photo: 'default.jpg'
+            photo
+        }, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
         });
         (0, _alertsDefault.default)('success', 'Account created successfully!');
         setTimeout(()=>{
@@ -51879,7 +51890,11 @@ var _alertsDefault = parcelHelpers.interopDefault(_alerts);
 const updateProfileData = async (data, type)=>{
     try {
         const url = type === 'password' ? '/api/users/update-password' : '/api/users/me';
-        const res = await (0, _axiosDefault.default).put(url, data);
+        const res = await (0, _axiosDefault.default).put(url, data, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
         (0, _alertsDefault.default)('success', res.data.message);
         setTimeout(()=>{
             window.location.assign('/me');
