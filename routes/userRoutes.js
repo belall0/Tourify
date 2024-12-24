@@ -5,7 +5,7 @@ import * as userController from '../controllers/userController.js';
 const router = express.Router();
 
 // Public routes
-router.post('/signup', userController.uploadUserPhoto, authController.signup);
+router.post('/signup', userController.uploadUserPhoto, userController.resizeUserPhoto, authController.signup);
 router.post('/login', authController.login);
 router.post('/logout', authController.logout);
 router.post('/forgot-password', authController.forgotPassword);
@@ -20,6 +20,7 @@ router
     authController.protectRoute,
     userController.setUserId,
     userController.uploadUserPhoto,
+    userController.resizeUserPhoto,
     userController.updateCurrentUser,
   )
   .delete(authController.protectRoute, userController.setUserId, userController.deleteCurrentUser);

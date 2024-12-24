@@ -10,11 +10,6 @@ import crypto from 'node:crypto';
 import { filterObjectFields, filterDocumentFields } from '../utils/dataFilter.js';
 
 export const signup = catchAsync(async (req, res, next) => {
-  // 0. check if there is a profile photo
-  if (req.file) {
-    req.body.photo = req.file.filename;
-  }
-
   // 1. Filter and sanitize input fields to prevent unauthorized data injection
   const filteredBody = filterObjectFields(req.body, ['_id', 'name', 'email', 'photo', 'role', 'password']);
 
