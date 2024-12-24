@@ -5,6 +5,47 @@ import HttpError from '../utils/httpError.js';
 import { HttpStatus, success } from '../utils/responseHandler.js';
 import { generateToken } from '../utils/jwtUtils.js';
 import { filterObjectFields, filterDocumentFields } from '../utils/dataFilter.js';
+import multer from 'multer';
+import mongoose from 'mongoose';
+
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'public/images/users');
+  },
+
+  filename: (req, file, cb) => {
+    // 1. Get the file extension
+    const ext = file.mimetype.split('/')[1];
+
+    // 2. Generate a unique file name for the user's photo
+    let userId = '';
+    // If the user is not logged in, generate a random id for the user and attach it to the request body to be used later as the user._id
+    if (!req.user) {
+      userId = new mongoose.Types.ObjectId();
+      req.body._id = userId;
+    } else {
+      userId = req.user._id;
+    }
+    const fileName = `user-${userId}.${ext}`;
+
+    cb(null, fileName);
+  },
+});
+
+const multerFilter = (req, file, cb) => {
+  if (!file.mimetype.startsWith('image')) {
+    return cb(new HttpError('Not an image!, Please upload only images.', 400), false);
+  }
+
+  cb(null, true);
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+export const uploadUserPhoto = upload.single('photo');
 
 export const setUserId = (req, res, next) => {
   req.params.id = req.user._id;
@@ -60,11 +101,16 @@ export const updateCurrentUser = catchAsync(async (req, res, next) => {
 
   // 3. Check if there is no any valid fields to update
   const modifiedFields = Object.keys(filteredBody).length;
-  if (!modifiedFields) {
+  if (!modifiedFields && !req.file) {
     return next(new HttpError('No valid fields provided in the request body', HttpStatus.BAD_REQUEST));
   }
 
-  // 4. Merge the filtered fields into the user's current data
+  // 4. update user photo if there is a photo in the request
+  if (req.file) {
+    filteredBody.photo = req.file.filename;
+  }
+
+  // 5. Merge the filtered fields into the user's current data
   Object.assign(req.user, filteredBody);
   await req.user.save();
 

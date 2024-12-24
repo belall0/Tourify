@@ -10,8 +10,13 @@ import crypto from 'node:crypto';
 import { filterObjectFields, filterDocumentFields } from '../utils/dataFilter.js';
 
 export const signup = catchAsync(async (req, res, next) => {
+  // 0. check if there is a profile photo
+  if (req.file) {
+    req.body.photo = req.file.filename;
+  }
+
   // 1. Filter and sanitize input fields to prevent unauthorized data injection
-  const filteredBody = filterObjectFields(req.body, ['name', 'email', 'photo', 'role', 'password']);
+  const filteredBody = filterObjectFields(req.body, ['_id', 'name', 'email', 'photo', 'role', 'password']);
 
   // 2. Create user in the database using only the filtered, safe fields
   const user = await User.create(filteredBody);
@@ -21,6 +26,7 @@ export const signup = catchAsync(async (req, res, next) => {
 
   // 4. generate token
   const token = generateToken(user._id);
+
   // 5. set cookie with token
   res.cookie('jwt', token, {
     httpOnly: true,

@@ -661,7 +661,7 @@ if (passwordForm) passwordForm.addEventListener('submit', async (e)=>{
     (0, _updateProfileJsDefault.default)(data, 'password');
 });
 
-},{"./login.js":"9jZEH","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./map.js":"5VGc0","./signup.js":"jBwuk","./logout.js":"eo6cR","./updateProfile.js":"fnOQO"}],"9jZEH":[function(require,module,exports,__globalThis) {
+},{"./login.js":"9jZEH","./signup.js":"jBwuk","./map.js":"5VGc0","./logout.js":"eo6cR","./updateProfile.js":"fnOQO","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9jZEH":[function(require,module,exports,__globalThis) {
 /* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _axios = require("axios");
@@ -684,37 +684,7 @@ const login = async (email, password)=>{
 };
 exports.default = login;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","axios":"jo6P5","./alerts":"g7ava"}],"gkKU3":[function(require,module,exports,__globalThis) {
-exports.interopDefault = function(a) {
-    return a && a.__esModule ? a : {
-        default: a
-    };
-};
-exports.defineInteropFlag = function(a) {
-    Object.defineProperty(a, '__esModule', {
-        value: true
-    });
-};
-exports.exportAll = function(source, dest) {
-    Object.keys(source).forEach(function(key) {
-        if (key === 'default' || key === '__esModule' || Object.prototype.hasOwnProperty.call(dest, key)) return;
-        Object.defineProperty(dest, key, {
-            enumerable: true,
-            get: function() {
-                return source[key];
-            }
-        });
-    });
-    return dest;
-};
-exports.export = function(dest, destName, get) {
-    Object.defineProperty(dest, destName, {
-        enumerable: true,
-        get: get
-    });
-};
-
-},{}],"jo6P5":[function(require,module,exports,__globalThis) {
+},{"axios":"jo6P5","./alerts":"g7ava","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jo6P5":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>(0, _axiosJsDefault.default));
@@ -1569,7 +1539,37 @@ function bind(fn, thisArg) {
     };
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cpqD8":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports,__globalThis) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, '__esModule', {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === 'default' || key === '__esModule' || Object.prototype.hasOwnProperty.call(dest, key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
+
+},{}],"cpqD8":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _utilsJs = require("./../utils.js");
@@ -5645,7 +5645,43 @@ const showAlert = (type, message)=>{
 };
 exports.default = showAlert;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5VGc0":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jBwuk":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _axios = require("axios");
+var _axiosDefault = parcelHelpers.interopDefault(_axios);
+var _alerts = require("./alerts");
+var _alertsDefault = parcelHelpers.interopDefault(_alerts);
+const validateForm = (passwordValue, confirmPasswordValue)=>{
+    // validate confirm password
+    if (passwordValue !== confirmPasswordValue) {
+        alert('Passwords do not match');
+        return false;
+    }
+    return true;
+};
+const signup = async (name, email, role, password, confirmPassword)=>{
+    // validate form
+    if (!validateForm(password, confirmPassword)) return;
+    try {
+        const res = await (0, _axiosDefault.default).post('/api/users/signup', {
+            name,
+            email,
+            role,
+            password,
+            photo: 'default.jpg'
+        });
+        (0, _alertsDefault.default)('success', 'Account created successfully!');
+        setTimeout(()=>{
+            window.location.assign('/');
+        }, 500);
+    } catch (err) {
+        (0, _alertsDefault.default)('error', err.response.data.message);
+    }
+};
+exports.default = signup;
+
+},{"axios":"jo6P5","./alerts":"g7ava","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5VGc0":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _sdk = require("@maptiler/sdk");
@@ -5692,7 +5728,7 @@ const displayMap = (locations)=>{
 };
 exports.default = displayMap;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@maptiler/sdk":"ihYym"}],"ihYym":[function(require,module,exports,__globalThis) {
+},{"@maptiler/sdk":"ihYym","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ihYym":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AJAXError", ()=>yu);
@@ -51815,43 +51851,7 @@ const gBase64 = {
     extendBuiltins: extendBuiltins
 };
 
-},{"50b6ce0789561b60":"fCgem","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jBwuk":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _axios = require("axios");
-var _axiosDefault = parcelHelpers.interopDefault(_axios);
-var _alerts = require("./alerts");
-var _alertsDefault = parcelHelpers.interopDefault(_alerts);
-const validateForm = (passwordValue, confirmPasswordValue)=>{
-    // validate confirm password
-    if (passwordValue !== confirmPasswordValue) {
-        alert('Passwords do not match');
-        return false;
-    }
-    return true;
-};
-const signup = async (name, email, role, password, confirmPassword)=>{
-    // validate form
-    if (!validateForm(password, confirmPassword)) return;
-    try {
-        const res = await (0, _axiosDefault.default).post('/api/users/signup', {
-            name,
-            email,
-            role,
-            password,
-            photo: 'default.jpg'
-        });
-        (0, _alertsDefault.default)('success', 'Account created successfully!');
-        setTimeout(()=>{
-            window.location.assign('/');
-        }, 500);
-    } catch (err) {
-        (0, _alertsDefault.default)('error', err.response.data.message);
-    }
-};
-exports.default = signup;
-
-},{"axios":"jo6P5","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./alerts":"g7ava"}],"eo6cR":[function(require,module,exports,__globalThis) {
+},{"50b6ce0789561b60":"fCgem","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eo6cR":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _axios = require("axios");
@@ -51869,7 +51869,7 @@ const logout = async ()=>{
 };
 exports.default = logout;
 
-},{"axios":"jo6P5","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./alerts":"g7ava"}],"fnOQO":[function(require,module,exports,__globalThis) {
+},{"axios":"jo6P5","./alerts":"g7ava","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fnOQO":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _axios = require("axios");
@@ -51890,6 +51890,6 @@ const updateProfileData = async (data, type)=>{
 };
 exports.default = updateProfileData;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","axios":"jo6P5","./alerts":"g7ava"}]},["3xCCX","1Z4Rq"], "1Z4Rq", "parcelRequire94c2")
+},{"axios":"jo6P5","./alerts":"g7ava","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["3xCCX","1Z4Rq"], "1Z4Rq", "parcelRequire94c2")
 
 //# sourceMappingURL=index.js.map
