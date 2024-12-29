@@ -5,7 +5,7 @@ import { HttpStatus, success } from '../utils/responseHandler.js';
 import { generateToken } from '../utils/jwtUtils.js';
 import jwt from 'jsonwebtoken';
 import { promisify } from 'node:util';
-import { sendMail } from '../utils/emailService.js';
+// import { sendMail } from '../utils/emailService.js';
 import crypto from 'node:crypto';
 import { filterObjectFields, filterDocumentFields } from '../utils/dataFilter.js';
 
@@ -166,7 +166,7 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
   };
 
   try {
-    await sendMail(mailOptions);
+    // await sendMail(mailOptions);
 
     // Save reset token and expiration only after email sends successfully
     await user.save();
