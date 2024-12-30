@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import slugify from 'slugify';
-import Review from './reviewModel.js';
 import HttpError from '../utils/httpError.js';
 
 // Remove fields when retrieving data from the database
@@ -104,10 +103,6 @@ const tourSchema = new mongoose.Schema(
         day: Number,
       },
     ],
-    owner: {
-      type: mongoose.Schema.ObjectId,
-      ref: 'User',
-    },
     guides: [
       {
         type: mongoose.Schema.ObjectId,
@@ -122,31 +117,8 @@ const tourSchema = new mongoose.Schema(
   },
 );
 
-tourSchema.virtual('reviews', {
-  ref: 'Review',
-  localField: '_id',
-  foreignField: 'tour',
-});
-
 tourSchema.pre('save', async function (next) {
   this.slug = slugify(this.name, { lower: true });
-
-  next();
-});
-
-tourSchema.pre('save', async function (next) {
-  // Validate Guides IDs
-  if (this.guides && this.guides.length > 0) {
-    const existingGuides = await mongoose.model('User').find({ _id: { $in: this.guides } });
-
-    if (existingGuides.length !== this.guides.length) {
-      const existingGuidesIds = existingGuides.map((guide) => guide._id.toString());
-
-      const missingGuides = this.guides.filter((guideId) => !existingGuidesIds.includes(guideId.toString()));
-
-      return next(new HttpError(`No guide(s) found with id(s): ${missingGuides.join(', ')}`, 404));
-    }
-  }
 
   next();
 });
@@ -160,8 +132,6 @@ tourSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'guides',
     select: 'name email photo role -_id',
-  }).populate({
-    path: 'reviews',
   });
 
   next();

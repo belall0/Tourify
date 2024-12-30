@@ -1,34 +1,52 @@
+import jwt from 'jsonwebtoken';
+import crypto from 'node:crypto';
+import { promisify } from 'node:util';
 import User from '../models/userModel.js';
 import catchAsync from '../utils/catchAsync.js';
 import HttpError from '../utils/httpError.js';
 import { HttpStatus, success } from '../utils/responseHandler.js';
 import { generateToken } from '../utils/jwtUtils.js';
-import jwt from 'jsonwebtoken';
-import { promisify } from 'node:util';
-// import { sendMail } from '../utils/emailService.js';
-import crypto from 'node:crypto';
 import { filterObjectFields, filterDocumentFields } from '../utils/dataFilter.js';
+import Email from '../utils/emailService.js';
+import { uploadToCloudinary } from '../middlewares/uploadHandler.js';
 
 export const signup = catchAsync(async (req, res, next) => {
   // 1. Filter and sanitize input fields to prevent unauthorized data injection
-  const filteredBody = filterObjectFields(req.body, ['_id', 'name', 'email', 'photo', 'role', 'password']);
+  const filteredBody = filterObjectFields(req.body, ['_id', 'name', 'email', 'role', 'password']);
 
   // 2. Create user in the database using only the filtered, safe fields
-  const user = await User.create(filteredBody);
+  const user = new User(filteredBody);
 
-  // 3. Filter user document to remove sensitive information from the response
-  const filteredUser = filterDocumentFields(user, ['name', 'email', 'photo', 'role']);
+  // 3. upload profile photo to cloudinary
+  if (req.file) {
+    const result = await uploadToCloudinary(req.file.buffer, {
+      folder: 'users',
+      public_id: `user-${user._id}`,
+      isProfilePhoto: true,
+    });
+    user.photoUrl = result.url;
+    user.photo = result.public_id;
+  } else {
+    user.photoUrl = 'https://res.cloudinary.com/dnjmqmbcb/image/upload/v1735521771/default_m4q3fx.jpg';
+    user.photo = 'default';
+  }
 
-  // 4. generate token
+  // 4. Save user document to the database
+  await user.save();
+
+  // 5. Filter user document to remove sensitive information from the response
+  const filteredUser = filterDocumentFields(user, ['name', 'email', 'role']);
+
+  // 6. generate token
   const token = generateToken(user._id);
 
-  // 5. set cookie with token
+  // 7. set cookie with token
   res.cookie('jwt', token, {
     httpOnly: true,
-    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000), // convert days to milliseconds
   });
 
-  // 6. Send successful response with created user data and authentication token
+  // 8. Send response with created user and token
   success(res, HttpStatus.CREATED, filteredUser, 'user', token);
 });
 
@@ -59,7 +77,7 @@ export const login = catchAsync(async (req, res, next) => {
 });
 
 export const logout = catchAsync(async (req, res, next) => {
-  // 1. set the cookie with a dummy token and an expired date in the past
+  // 1. set the cookie with a dummy token and short expiry time to log out
   res.cookie('jwt', 'loggedout', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
@@ -67,6 +85,82 @@ export const logout = catchAsync(async (req, res, next) => {
 
   // 2. Send response with message
   success(res, HttpStatus.OK, null, null, null, 'Logged out successfully');
+});
+
+export const forgotPassword = catchAsync(async (req, res, next) => {
+  // 1. Validate Email
+  const { email } = req.body;
+  if (!email) {
+    return next(new HttpError('Please provide an email address', HttpStatus.BAD_REQUEST));
+  }
+
+  // 2. Find user by email
+  const user = await User.findOne({ email });
+  if (!user) {
+    return next(new HttpError('No user found with this email address', HttpStatus.NOT_FOUND));
+  }
+
+  // 3. generate password reset token
+  const resetToken = user.createPasswordResetToken();
+
+  // 4. Create password reset URL
+  const resetURL = `${req.protocol}://${req.get('host')}/api/users/reset-password/${resetToken}`;
+
+  // 5.Send email with reset link
+  try {
+    await new Email(user, resetURL).sendPasswordReset();
+
+    // 6. save user document with the new password reset token and expiry time
+    await user.save();
+
+    // 7. Send response with message
+    success(res, HttpStatus.OK, null, null, null, 'Password reset token sent to email');
+  } catch (err) {
+    return next(
+      new HttpError(
+        'There was an error sending the reset password email. Try again later!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      ),
+    );
+  }
+});
+
+export const resetPassword = catchAsync(async (req, res, next) => {
+  // 1. Extract the reset token and new password from the request
+  const token = req.params.token;
+  const newPassword = req.body.newPassword;
+
+  // 2. Check if the new password is provided
+  if (!newPassword) {
+    return next(new HttpError('newPassword is required', HttpStatus.BAD_REQUEST));
+  }
+
+  // 3. Hash the reset token to compare it with the stored hashed token
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+  // 4. Find the user associated with the valid reset token
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetTokenExpiry: { $gt: Date.now() }, // check if the token is not expired
+  });
+
+  // 5. Handle case where no user is found (invalid or expired token)
+  if (!user) {
+    return next(new HttpError('Token is invalid or has expired', HttpStatus.BAD_REQUEST));
+  }
+
+  // 6. Update the user's password with the new password
+  user.password = newPassword;
+
+  // 7. Clear the password reset token and expiry time to prevent reuse
+  user.passwordResetToken = undefined;
+  user.passwordResetTokenExpiry = undefined;
+
+  // 8. Save the updated user document
+  await user.save();
+
+  // 9. Generate JWT and send it in a cookie
+  success(res, HttpStatus.OK, null, null, generateToken(user._id), 'Password reset successfully');
 });
 
 export const protectRoute = catchAsync(async (req, res, next) => {
@@ -96,13 +190,25 @@ export const protectRoute = catchAsync(async (req, res, next) => {
     return next(new HttpError('User recently changed password. Please log in again.', HttpStatus.UNAUTHORIZED));
   }
 
-  // 5. Grant access to protected route
+  // 5. Set user in response locals to be used in the next middleware
   req.user = currentUser;
   next();
 });
 
-// only for rendered pages, no errors
+export const restrictTo = (...roles) => {
+  return (req, res, next) => {
+    // req.user.role is set in the protectRoute middleware
+    if (!roles.includes(req.user.role)) {
+      return next(new HttpError('You do not have permission to perform this action.', HttpStatus.FORBIDDEN));
+    }
+
+    next();
+  };
+};
+
 export const checkAuth = async (req, res, next) => {
+  // to render the header based on whether the user is logged in or not
+
   // 1. Check if token exists
   if (!req.cookies.jwt || req.cookies.jwt === 'loggedout') {
     return next();
@@ -126,88 +232,3 @@ export const checkAuth = async (req, res, next) => {
   res.locals.user = currentUser;
   return next();
 };
-
-export const restrictTo = (...roles) => {
-  return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return next(new HttpError('You do not have permission to perform this action.', HttpStatus.FORBIDDEN));
-    }
-
-    next();
-  };
-};
-
-export const forgotPassword = catchAsync(async (req, res, next) => {
-  // 1. Validate Email
-  const { email } = req.body;
-  if (!email) {
-    return next(new HttpError('Please provide an email address', HttpStatus.BAD_REQUEST));
-  }
-
-  // 2. Find user by email
-  const user = await User.findOne({ email });
-  if (!user) {
-    return next(new HttpError('No user found with this email address', HttpStatus.NOT_FOUND));
-  }
-
-  // 3. generate password reset token
-  const resetToken = user.createPasswordResetToken();
-
-  // 4. Create password reset URL
-  const resetURL = `${req.protocol}://${req.get('host')}/api/users/reset-password/${resetToken}`;
-
-  // 5.Send email with reset link
-  const mailOptions = {
-    from: 'Belal Muhammad <belallmuhammad0@gmail.com',
-    to: user.email,
-    subject: 'Password Reset Token (Valid for 10 minutes)',
-    text: `Forgot your password? Submit a PATCH request with your new password to: ${resetURL}.\n
-             If you didn't request this, please ignore this email.`,
-  };
-
-  try {
-    // await sendMail(mailOptions);
-
-    // Save reset token and expiration only after email sends successfully
-    await user.save();
-
-    success(res, HttpStatus.OK, null, null, null, 'Password reset token sent to email');
-  } catch (error) {
-    return next(new HttpError('Error sending reset email', HttpStatus.INTERNAL_SERVER_ERROR));
-  }
-});
-
-export const resetPassword = catchAsync(async (req, res, next) => {
-  // 1. Extract the reset token and new password from the request
-  const token = req.params.token;
-  const newPassword = req.body.newPassword;
-
-  // 2. Check if the new password is provided
-  if (!newPassword) {
-    return next(new HttpError('newPassword is required', HttpStatus.BAD_REQUEST));
-  }
-
-  // 3. Hash the reset token to securely compare it with the stored hashed token
-  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-
-  // 4. Find the user associated with the valid reset token
-  const user = await User.findOne({
-    passwordResetToken: hashedToken,
-    passwordResetTokenExpiry: { $gt: Date.now() },
-  });
-
-  // 5. Handle case where no user is found (invalid or expired token)
-  if (!user) {
-    return next(new HttpError('Token is invalid or has expired', HttpStatus.BAD_REQUEST));
-  }
-
-  // 6. Update the user's password with the new password
-  user.password = newPassword;
-
-  // 7. Clear the password reset token and expiry time to prevent reuse
-  user.passwordResetToken = undefined;
-  user.passwordResetTokenExpiry = undefined;
-
-  await user.save();
-  success(res, HttpStatus.OK, null, null, generateToken(user._id), 'Password reset successfully');
-});

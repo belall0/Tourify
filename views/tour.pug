@@ -1,14 +1,12 @@
 extends base
 
-
 block head
   link(href="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.1/maptiler-sdk.css" rel="stylesheet")
-
 
 mixin reviewBox(review)
   .reviews__card
     .reviews__avatar
-      img.reviews__avatar-img(src=`/images/users/${review.user.photo}`, alt=`${review.user.name}`)
+      img.reviews__avatar-img(src=`${review.user.photoUrl}`, alt=`${review.user.name}`)
       h6.reviews__user= `${review.user.name}`
     p.reviews__text= review.review
     .reviews__rating
@@ -81,8 +79,6 @@ block content
 
   section.section-reviews
     .reviews
-      each review in tour.reviews
-        +reviewBox(review)
   
   section.section-cta
   .cta

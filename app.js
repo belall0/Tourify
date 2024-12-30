@@ -1,5 +1,4 @@
 import express from 'express';
-import path from 'node:path';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import HttpError from './utils/httpError.js';
@@ -14,20 +13,20 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
 
+app.use(express.static('public'));
 app.set('view engine', 'pug');
-app.set('views', path.join(import.meta.dirname, 'views'));
-app.use(express.static(path.join(import.meta.dirname, 'public')));
+app.set('views', './views');
 
 app.use('/', viewRoutes);
 app.use('/api/tours', tourRoutes);
 app.use('/api/users', userRoutes);
 
-// 404 handler
+// 404 handler to catch all unknown routes
 app.all('*', (req, res, next) => {
   next(new HttpError(`The endpoint you requested (${req.originalUrl}) could not be found.`, 404));
 });
 
-// error handler
+// Global error handler to catch all errors during the request-response cycle
 app.use(globalMiddlewareHandler);
 
 export default app;
