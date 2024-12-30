@@ -7,8 +7,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "coverage": "vitest run --coverage",
-    "watch:js": "parcel watch ./js/index.js --dist-dir ./public/scripts",
-    "build:js": "parcel build ./js/index.js --dist-dir ./public/scripts --no-source-maps"
+    "watch:js": "parcel watch ./client/index.js --dist-dir ./public/scripts",
+    "build:js": "parcel build ./client/index.js --dist-dir ./public/scripts --no-source-maps"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
