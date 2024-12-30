@@ -6,3 +6,4 @@ eslint.config.js
 nodemon.json
 package-lock.json
 README.md
+.env

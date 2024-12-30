@@ -2,7 +2,7 @@ services:
   app:
     build: .
     container_name: app-container
-    image: app-image
+    image: belall0/tourify
     ports:
       - '3000:3000'
     env_file:
