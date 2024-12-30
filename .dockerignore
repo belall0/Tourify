@@ -1,0 +1,8 @@
+client/
+node_modules/
+.dockerignore
+.gitignore
+eslint.config.js
+nodemon.json
+package-lock.json
+README.md
