@@ -1,9 +1,12 @@
 services:
   app:
     build: .
-    container_name: app-container
-    image: belall0/tourify
+    container_name: tourify
+    image: belall0/tourify:latest
     ports:
-      - '3000:3000'
+      - '80:80'
+      - '443:443'
     env_file:
       - .env
+    volumes:
+      - '/etc/letsencrypt:/etc/letsencrypt:ro'
