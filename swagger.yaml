@@ -143,3 +143,65 @@ paths:
                   message:
                     type: string
                     example: 'No unverified user found with this email address'
+
+  /api/users/verify-email:
+    post:
+      tags: [Users]
+      summary: Verify user's email
+      description: Verify user's email with the verification code sent to the user's email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Your email must be valid as a verification email will be sent.
+                  example: belallmuhammad0@gmail.com
+                verificationCode:
+                  type: string
+                  description: Verification code sent to your email
+                  example: 123456
+              required: [email, verificationCode]
+      responses:
+        200:
+          description: Email verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Email verified successfully
+        400:
+          description: Bad request, email or verification code not provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: Please provide email and verification code!
+        404:
+          description: Invalid or expired verification code
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: Invalid or expired verification code
