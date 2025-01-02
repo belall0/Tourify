@@ -44,11 +44,86 @@ export const signup = catchAsync(async (req, res, next) => {
   // 7. Send response
   res.status(HttpStatus.CREATED).json({
     status: 'success',
-    message: 'Thanks for signing up! Please check your email (including spam) to activate your account.',
+    message:
+      'Thanks for signing up! Please check your email (including spam) to activate your account. You have 10 minutes to verify your email',
   });
 });
 
-export const verifyEmail = catchAsync(async (req, res, next) => {});
+export const resendVerificationCode = catchAsync(async (req, res, next) => {
+  // 1. Get the email from the request and check if it exists
+  const { email } = req.body;
+  if (!email) {
+    return next(new HttpError('Please provide email!', HttpStatus.BAD_REQUEST));
+  }
+
+  // 2. Find the user associated with the email
+  const user = await User.findOne({
+    email,
+    isAccountVerified: false,
+  });
+
+  if (!user) {
+    return next(new HttpError('No unverified user found with this email address', HttpStatus.NOT_FOUND));
+  }
+
+  // 3. Generate a new email verification code
+  const emailVerificationCode = user.createEmailVerificationCode();
+  // 4. Save the new verification code and expiry time to the user document
+  await user.save();
+  // 5. Send the new verification code to the user's email
+  await new Email(user, emailVerificationCode).sendEmailVerification();
+
+  // 6. Send response with message
+  res.status(HttpStatus.OK).json({
+    status: 'success',
+    message: 'Verification code sent to email. you have 10 minutes to verify your email',
+  });
+});
+
+export const verifyEmail = catchAsync(async (req, res, next) => {
+  // 1. Get the email and verification code from the request and check if they exist
+  const { email, verificationCode } = req.body;
+  if (!email || !verificationCode) {
+    return next(new HttpError('Please provide email and verification code!', HttpStatus.BAD_REQUEST));
+  }
+
+  // 2. Hash the verification code to compare it with the stored hashed code
+  const hashedCode = crypto.createHash('sha256').update(verificationCode).digest('hex');
+
+  // 3. Find the user associated with the valid verification code
+  const user = await User.findOne({
+    verificationCode: hashedCode,
+    verificationCodeExpiry: { $gt: Date.now() }, // check if the token is not expired
+  });
+
+  if (!user) {
+    return next(new HttpError('Invalid or expired verification code', HttpStatus.BAD_REQUEST));
+  }
+
+  // 4. Update the user's emailVerified field to true and clear the verification code and expiry time
+  user.isAccountVerified = true;
+  user.verificationCode = undefined;
+  user.verificationCodeExpiry = undefined;
+
+  // 5. Save the updated user document
+  await user.save();
+
+  // 6. Generate JWT
+  const token = generateToken(user._id);
+
+  // 7. Set cookie with token
+  res.cookie('jwt', token, {
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+  });
+
+  // 6. Send response with message
+  res.status(HttpStatus.OK).json({
+    status: 'success',
+    token,
+    message: 'Email verified successfully',
+  });
+});
 
 export const login = catchAsync(async (req, res, next) => {
   // 1. Get email and password from request body and check if they exist

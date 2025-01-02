@@ -58,7 +58,7 @@ paths:
                     example: success
                   message:
                     type: string
-                    example: Thanks for signing up! Please check your email (including spam) to activate your account.
+                    example: Thanks for signing up! Please check your email (including spam) to activate your account. you have 10 minutes to verify your email.
         400:
           description: Bad request
           content:
@@ -85,3 +85,61 @@ paths:
                   message:
                     type: string
                     example: 'Internal server error'
+
+  /api/users/resend-verification:
+    post:
+      tags: [Users]
+      summary: Resend verification email
+      description: Resend verification email to the user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Your email must be valid as a verification email will be sent.
+                  example: belallmuhammad0@gmail.com
+              required: [email]
+      responses:
+        200:
+          description: Verification email sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Verification code sent to email. you have 10 minutes to verify your email
+        400:
+          description: Bad request, email not provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: 'Please provide email!'
+        404:
+          description: Not found, unverified user not found with this email
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: 'No unverified user found with this email address'
