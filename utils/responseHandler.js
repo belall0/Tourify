@@ -36,7 +36,9 @@ const success = (res, status = HttpStatus.OK, data = null, key = 'data', token =
   }
 
   if (status !== HttpStatus.NO_CONTENT && data) {
-    response.count = Array.isArray(data) ? data.length || 0 : 1;
+    // only attach count if data is an array with length greater than 2
+    if (Array.isArray(data) && data.length > 2) response.count = data.length;
+
     response.data = { [key]: data };
   }
 

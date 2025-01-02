@@ -11,10 +11,10 @@ import Email from '../utils/emailService.js';
 import { uploadToCloudinary } from '../middlewares/uploadHandler.js';
 
 export const signup = catchAsync(async (req, res, next) => {
-  // 1. Filter and sanitize input fields to prevent unauthorized data injection
-  const filteredBody = filterObjectFields(req.body, ['_id', 'name', 'email', 'role', 'password']);
+  // 1. Sanitize request body to remove unwanted fields
+  const filteredBody = filterObjectFields(req.body, ['name', 'email', 'role', 'password', 'photo']);
 
-  // 2. Create user in the database using only the filtered, safe fields
+  // 2. Create new user
   const user = new User(filteredBody);
 
   // 3. upload profile photo to cloudinary
@@ -24,6 +24,7 @@ export const signup = catchAsync(async (req, res, next) => {
       public_id: `user-${user._id}`,
       isProfilePhoto: true,
     });
+
     user.photoUrl = result.url;
     user.photo = result.public_id;
   } else {
@@ -31,24 +32,23 @@ export const signup = catchAsync(async (req, res, next) => {
     user.photo = 'default';
   }
 
-  // 4. Save user document to the database
+  // 4. generate email verification code
+  const emailVerificationCode = user.createEmailVerificationCode();
+
+  // 5. Save user to database
   await user.save();
 
-  // 5. Filter user document to remove sensitive information from the response
-  const filteredUser = filterDocumentFields(user, ['name', 'email', 'role']);
+  // 6. Send verification code to user's email
+  await new Email(user, emailVerificationCode).sendEmailVerification();
 
-  // 6. generate token
-  const token = generateToken(user._id);
-
-  // 7. set cookie with token
-  res.cookie('jwt', token, {
-    httpOnly: true,
-    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000), // convert days to milliseconds
+  // 7. Send response
+  res.status(HttpStatus.CREATED).json({
+    status: 'success',
+    message: 'Thanks for signing up! Please check your email (including spam) to activate your account.',
   });
-
-  // 8. Send response with created user and token
-  success(res, HttpStatus.CREATED, filteredUser, 'user', token);
 });
+
+export const verifyEmail = catchAsync(async (req, res, next) => {});
 
 export const login = catchAsync(async (req, res, next) => {
   // 1. Get email and password from request body and check if they exist

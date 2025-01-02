@@ -63,6 +63,14 @@ class Email {
       console.error(`Error Details: ${error.message}`);
     }
   }
+
+  async sendEmailVerification() {
+    try {
+      await this.send('verifyEmail', 'Verify Email Address - Tourify');
+    } catch (error) {
+      console.error(`Error Details: ${error.message}`);
+    }
+  }
 }
 
 export default Email;

@@ -1,11 +1,17 @@
 import express from 'express';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import YAML from 'yaml';
+import fs from 'node:fs';
 import HttpError from './utils/httpError.js';
 import globalMiddlewareHandler from './middlewares/errorMiddleware.js';
 import tourRoutes from './routes/tourRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import viewRoutes from './routes/viewRoutes.js';
+import swaggerUi from 'swagger-ui-express';
+
+// Load the OpenAPI document
+const swaggerDocument = YAML.parse(fs.readFileSync('./swagger.yaml', 'utf8'));
 
 const app = express();
 
@@ -17,6 +23,7 @@ app.use(express.static('public'));
 app.set('view engine', 'pug');
 app.set('views', './views');
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/', viewRoutes);
 app.use('/api/tours', tourRoutes);
 app.use('/api/users', userRoutes);

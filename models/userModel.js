@@ -23,25 +23,39 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
     },
 
-    photo: {
-      type: String,
-      default: 'default.jpg',
-    },
-    photoUrl: {
-      type: String,
-    },
-
-    role: {
-      type: String,
-      default: 'user',
-      enum: ['customer', 'admin', 'guide', 'operator'],
-    },
-
     password: {
       type: String,
       required: [true, 'Password is required'],
       minLength: [6, 'Password must be at least 6 characters'],
       trim: true,
+    },
+
+    role: {
+      type: String,
+      default: 'user',
+      enum: ['customer', 'operator', 'admin'],
+    },
+
+    photo: {
+      type: String,
+      default: 'default.jpg',
+    },
+
+    photoUrl: {
+      type: String,
+    },
+
+    isAccountVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    verificationCode: {
+      type: String,
+    },
+
+    verificationCodeExpiry: {
+      type: Date,
     },
 
     passwordUpdatedAt: {
@@ -105,6 +119,22 @@ userSchema.methods.createPasswordResetToken = function () {
   this.passwordResetTokenExpiry = Date.now() + 10 * 60 * 1000;
 
   return resetToken;
+};
+
+userSchema.methods.createEmailVerificationCode = function () {
+  // 1. Generate a random 6-digit number
+  const verificationCode = Math.floor(100000 + Math.random() * 900000);
+
+  // 2. Set the account verification status to false
+  this.isAccountVerified = false;
+
+  // 3. Hash the number and save it to the user document
+  this.verificationCode = crypto.createHash('sha256').update(verificationCode.toString()).digest('hex');
+
+  // 4. set the expiry time for the verification code (e.g. 10 minutes)
+  this.verificationCodeExpiry = Date.now() + 10 * 60 * 1000;
+
+  return verificationCode;
 };
 
 const User = mongoose.model('User', userSchema);
