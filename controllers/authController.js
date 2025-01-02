@@ -68,8 +68,10 @@ export const resendVerificationCode = catchAsync(async (req, res, next) => {
 
   // 3. Generate a new email verification code
   const emailVerificationCode = user.createEmailVerificationCode();
+
   // 4. Save the new verification code and expiry time to the user document
   await user.save();
+
   // 5. Send the new verification code to the user's email
   await new Email(user, emailVerificationCode).sendEmailVerification();
 
@@ -138,17 +140,25 @@ export const login = catchAsync(async (req, res, next) => {
     return next(new HttpError('Invalid email or password', HttpStatus.UNAUTHORIZED));
   }
 
-  // 3. Generate token
+  // 3. Check if user's email is verified
+  if (!user.isAccountVerified) {
+    return next(new HttpError('Please verify your email to login', HttpStatus.UNAUTHORIZED));
+  }
+
+  // 4. Generate token
   const token = generateToken(user._id);
 
-  // 4. Set cookie with token
+  // 5. Set cookie with token
   res.cookie('jwt', token, {
     expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
     httpOnly: true,
   });
 
-  // 5. Send response with token
-  success(res, HttpStatus.OK, null, null, token);
+  // 6. Send response with token
+  res.status(HttpStatus.OK).json({
+    status: 'success',
+    token,
+  });
 });
 
 export const logout = catchAsync(async (req, res, next) => {
@@ -159,7 +169,10 @@ export const logout = catchAsync(async (req, res, next) => {
   });
 
   // 2. Send response with message
-  success(res, HttpStatus.OK, null, null, null, 'Logged out successfully');
+  res.status(HttpStatus.OK).json({
+    status: 'success',
+    message: 'Logged out successfully',
+  });
 });
 
 export const forgotPassword = catchAsync(async (req, res, next) => {
@@ -179,7 +192,7 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
   const resetToken = user.createPasswordResetToken();
 
   // 4. Create password reset URL
-  const resetURL = `${req.protocol}://${req.get('host')}/api/users/reset-password/${resetToken}`;
+  const resetURL = `${req.protocol}://${req.get('host')}/api/users/reset-password/token=${resetToken}`;
 
   // 5.Send email with reset link
   try {
@@ -189,7 +202,10 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
     await user.save();
 
     // 7. Send response with message
-    success(res, HttpStatus.OK, null, null, null, 'Password reset token sent to email');
+    res.status(HttpStatus.OK).json({
+      status: 'success',
+      message: 'Password reset token sent to email successfully, You have 10 minutes to reset your password',
+    });
   } catch (err) {
     return next(
       new HttpError(
@@ -221,7 +237,7 @@ export const resetPassword = catchAsync(async (req, res, next) => {
 
   // 5. Handle case where no user is found (invalid or expired token)
   if (!user) {
-    return next(new HttpError('Token is invalid or has expired', HttpStatus.BAD_REQUEST));
+    return next(new HttpError('Token is invalid or has expired', HttpStatus.NOT_FOUND));
   }
 
   // 6. Update the user's password with the new password
@@ -235,7 +251,19 @@ export const resetPassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   // 9. Generate JWT and send it in a cookie
-  success(res, HttpStatus.OK, null, null, generateToken(user._id), 'Password reset successfully');
+  const newToken = generateToken(user._id);
+
+  // 10. Set cookie with token and send response
+  res.cookie('jwt', newToken, {
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+  });
+
+  res.status(HttpStatus.OK).json({
+    status: 'success',
+    token: newToken,
+    message: 'Password reset successfully',
+  });
 });
 
 export const protectRoute = catchAsync(async (req, res, next) => {

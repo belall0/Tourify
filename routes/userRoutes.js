@@ -9,7 +9,7 @@ router.post('/signup', upload.single('photo'), authController.signup);
 router.post('/resend-verification', authController.resendVerificationCode);
 router.post('/verify-email', authController.verifyEmail);
 router.post('/login', authController.login);
-router.post('/logout', authController.logout);
+router.post('/logout', authController.protectRoute, authController.logout);
 router.post('/forgot-password', authController.forgotPassword);
 router.put('/reset-password/:token', authController.resetPassword);
 router.put('/update-password', authController.protectRoute, userController.updatePassword);
