@@ -10,7 +10,7 @@ servers:
   - url: http://localhost:3000
     description: Development server
 paths:
-  /api/users/signup:
+  /api/auth/signup:
     post:
       tags: [Auth]
       summary: Register a new user
@@ -86,7 +86,7 @@ paths:
                     type: string
                     example: 'Internal server error'
 
-  /api/users/verify-email:
+  /api/auth/verify-email:
     post:
       tags: [Auth]
       summary: Verify user's email
@@ -153,7 +153,7 @@ paths:
                     type: string
                     example: Invalid or expired verification code
 
-  /api/users/resend-verification:
+  /api/auth/resend-verification:
     post:
       tags: [Auth]
       summary: Resend verification email
@@ -211,7 +211,7 @@ paths:
                     type: string
                     example: 'No unverified user found with this email address'
 
-  /api/users/login:
+  /api/auth/login:
     post:
       tags: [Auth]
       summary: Login user
@@ -278,7 +278,7 @@ paths:
                     type: string
                     example: 99d12349687fcad1295b5114612a5c6f012561a3ab8c518cc5f3673ee17d926f
 
-  /api/users/logout:
+  /api/auth/logout:
     post:
       tags: [Auth]
       summary: Logout user
@@ -309,7 +309,7 @@ paths:
         404:
           $ref: '#/components/responses/DeletedAccountError'
 
-  /api/users/forgot-password:
+  /api/auth/forgot-password:
     post:
       tags: [Auth]
       summary: Forgot password
@@ -367,7 +367,7 @@ paths:
                     type: string
                     example: Password reset token sent to email successfully, You have 10 minutes to reset your password
 
-  /api/users/reset-password/{token}:
+  /api/auth/reset-password/{token}:
     put:
       tags: [Auth]
       summary: Reset password

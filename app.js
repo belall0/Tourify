@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import HttpError from './utils/httpError.js';
 import globalMiddlewareHandler from './middlewares/errorMiddleware.js';
 import tourRoutes from './routes/tourRoutes.js';
-import userRoutes from './routes/userRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import viewRoutes from './routes/viewRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 
@@ -26,7 +26,7 @@ app.set('views', './views');
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/', viewRoutes);
 app.use('/api/tours', tourRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 
 // 404 handler to catch all unknown routes
 app.all('*', (req, res, next) => {
