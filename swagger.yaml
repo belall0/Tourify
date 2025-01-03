@@ -9,6 +9,7 @@ info:
 servers:
   - url: http://localhost:3000
     description: Development server
+
 paths:
   /api/auth/signup:
     post:
@@ -20,31 +21,16 @@ paths:
         content:
           multipart/form-data:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  description: User's full name
-                  example: Belal Muhammad
-                email:
-                  type: string
-                  description: Your email must be valid as a verification code will be sent.
-                  example: belallmuhammad0@gmail.com
-                password:
-                  type: string
-                  description: Password must be at least 8 characters long
-                  example: 12345678
-                role:
-                  type: string
-                  description: role must be either customer or operator
-                  example: customer
-                  enum: [customer, operator]
-                photo:
-                  type: string
-                  description: User's profile photo in jpg or png format
-                  example: photo.jpg
-                  format: binary
+              allOf:
+                - $ref: '#/components/schemas/User'
+                - type: object
+                  properties:
+                    password:
+                      type: string
+                      description: Password must be at least 8 characters long
+                      example: 12345678
               required: [name, email, password]
+
       responses:
         200:
           description: User registered successfully
@@ -434,6 +420,37 @@ paths:
                     example: Token is invalid or has expired
 
 components:
+  #-------------------------------
+  # Reusable schemas (data models)
+  #-------------------------------
+  schemas:
+    # User schema
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+          description: User's full name
+          example: Belal Muhammad
+        email:
+          type: string
+          description: Your email must be valid as a verification code will be sent.
+          example: belallmuhammad0@gmail.com
+        role:
+          type: string
+          description: role must be either customer or operator
+          example: customer
+          enum: [customer, operator]
+        photo:
+          type: string
+          description: User's profile photo in jpg or png format
+          example: photo.jpg
+          format: binary
+
+  #-------------------------------
+  # Reusable responses
+  #-------------------------------
+
   responses:
     UnauthorizedError:
       description: Access token is missing or invalid
