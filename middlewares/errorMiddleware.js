@@ -33,7 +33,7 @@ const sendErrorProd = (err, req, res) => {
     // don't send error details in production
     res.status(500).json({
       status: 'error',
-      message: 'something went wrong, please try again later',
+      message: 'Internal server error, please try again later',
     });
   } else {
     // render error page
@@ -47,7 +47,7 @@ const sendErrorProd = (err, req, res) => {
     // don't send error details in production
     res.status(500).render('error', {
       status: 'error',
-      message: 'something went wrong, please try again later',
+      message: 'Internal server error, please try again later',
     });
   }
 };

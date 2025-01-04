@@ -140,7 +140,7 @@ export const login = catchAsync(async (req, res, next) => {
 
   // 3. Check if user's email is verified
   if (!user.isAccountVerified) {
-    return next(new HttpError('Please verify your email to login', HttpStatus.UNAUTHORIZED));
+    return next(new HttpError('Please verify your email to login', HttpStatus.FORBIDDEN));
   }
 
   // 4. Generate token
@@ -156,6 +156,7 @@ export const login = catchAsync(async (req, res, next) => {
   res.status(HttpStatus.OK).json({
     status: 'success',
     token,
+    message: 'Logged in successfully',
   });
 });
 

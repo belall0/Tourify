@@ -13,26 +13,25 @@ servers:
 paths:
   /api/auth/signup:
     post:
-      tags: [Auth]
+      tags: [Authentication]
       summary: Register a new user
-      description: Register a new user with name, email, password, role, and photo and send a verification code to the user's email
+      description: Registers a new user, creating their account with provided details including name, email, password, role, and photo, and sending a confirmation email.
       requestBody:
         required: true
         content:
           multipart/form-data:
             schema:
+              required: [name, email, password, role]
               allOf:
                 - $ref: '#/components/schemas/User'
                 - type: object
                   properties:
                     password:
                       type: string
-                      description: Password must be at least 8 characters long
-                      example: 12345678
-              required: [name, email, password]
-
+                      description: The user's password
+                      example: securePassword123
       responses:
-        200:
+        201:
           description: User registered successfully
           content:
             application/json:
@@ -46,7 +45,20 @@ paths:
                     type: string
                     example: Thanks for signing up! Please check your email (including spam) to activate your account. you have 10 minutes to verify your email.
         400:
-          description: Bad request
+          description: Missing Value or Invalid Input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: 1) Please provide a valid email
+        409:
+          description: Conflict, user already exists with this email
           content:
             application/json:
               schema:
@@ -59,44 +71,32 @@ paths:
                     type: string
                     example: "Duplicate value for email: 'belallmuhammad0@gmail.com'"
         500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: error
-                  message:
-                    type: string
-                    example: 'Internal server error'
-
+          $ref: '#/components/responses/InternalServerError'
   /api/auth/verify-email:
     post:
-      tags: [Auth]
+      tags: [Authentication]
       summary: Verify user's email
-      description: Verify user's email with the verification code sent to the user's email
+      description: Verifies a user's email address using a token sent via email. Upon successful verification, the user's email is marked as verified in the database.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required: [email, verificationCode]
               properties:
                 email:
                   type: string
-                  description: Your email must be valid as a verification email will be sent.
+                  description: Your email must be associated with a verification code sent to your email
                   example: belallmuhammad0@gmail.com
                 verificationCode:
                   type: string
                   description: Verification code sent to your email
                   example: 123456
-              required: [email, verificationCode]
       responses:
         200:
           description: Email verified successfully
-          header:
+          headers:
             Set-Cookie:
               schema:
                 type: string
@@ -109,11 +109,14 @@ paths:
                   status:
                     type: string
                     example: success
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
                   message:
                     type: string
                     example: Email verified successfully
         400:
-          description: Bad request, email or verification code not provided
+          description: Missing or invalid input, expired verification code, and user not found with this email
           content:
             application/json:
               schema:
@@ -125,23 +128,20 @@ paths:
                   message:
                     type: string
                     example: Please provide email and verification code!
-        404:
-          description: Invalid or expired verification code
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: fail
-                  message:
-                    type: string
-                    example: Invalid or expired verification code
-
+              examples:
+                Missing or invalid input:
+                  value:
+                    status: fail
+                    message: Please provide email and verification code!
+                Invalid or expired verification code:
+                  value:
+                    status: fail
+                    message: Invalid or expired verification code
+        500:
+          $ref: '#/components/responses/InternalServerError'
   /api/auth/resend-verification:
     post:
-      tags: [Auth]
+      tags: [Authentication]
       summary: Resend verification email
       description: Resend verification email to the user
       requestBody:
@@ -150,12 +150,12 @@ paths:
           application/json:
             schema:
               type: object
+              required: [email]
               properties:
                 email:
                   type: string
                   description: Your email must be valid as a verification email will be sent.
                   example: belallmuhammad0@gmail.com
-              required: [email]
       responses:
         200:
           description: Verification email sent successfully
@@ -171,7 +171,7 @@ paths:
                     type: string
                     example: Verification code sent to email. you have 10 minutes to verify your email
         400:
-          description: Bad request, email not provided
+          description: email not provided
           content:
             application/json:
               schema:
@@ -184,7 +184,7 @@ paths:
                     type: string
                     example: 'Please provide email!'
         404:
-          description: Not found, unverified user not found with this email
+          description: unverified user not found with this email
           content:
             application/json:
               schema:
@@ -196,17 +196,20 @@ paths:
                   message:
                     type: string
                     example: 'No unverified user found with this email address'
-
+        500:
+          $ref: '#/components/responses/InternalServerError'
   /api/auth/login:
     post:
-      tags: [Auth]
+      tags: [Authentication]
       summary: Login user
       description: Login user with email and password
+
       requestBody:
         required: true
         content:
           application/json:
             schema:
+              required: [email, password]
               type: object
               properties:
                 email:
@@ -216,38 +219,12 @@ paths:
                 password:
                   type: string
                   description: Password must be at least 8 characters long
-                  example: 12345678
-              required: [email, password]
+                  example: securePassword123
+
       responses:
-        400:
-          description: Bad request, email or password not provided
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: fail
-                  message:
-                    type: string
-                    example: Please provide email and password!
-        401:
-          description: Unauthorized, email or password is incorrect
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: fail
-                  message:
-                    type: string
-                    example: Incorrect email or password
         200:
           description: User logged in successfully
-          header:
+          headers:
             Set-Cookie:
               schema:
                 type: string
@@ -262,17 +239,61 @@ paths:
                     example: success
                   token:
                     type: string
-                    example: 99d12349687fcad1295b5114612a5c6f012561a3ab8c518cc5f3673ee17d926f
-
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                  message:
+                    type: string
+                    example: Logged in successfully
+        400:
+          description: Email or password are missing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: Please provide email and password!
+        401:
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: Invalid email or password
+        403:
+          description: User not verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: Please verify your email to login
+        500:
+          $ref: '#/components/responses/InternalServerError'
   /api/auth/logout:
     post:
-      tags: [Auth]
+      tags: [Authentication]
       summary: Logout user
       description: Logout user and clear the cookie
+
       responses:
         200:
           description: User logged out successfully
-          header:
+          headers:
             Set-Cookie:
               schema:
                 type: string
@@ -288,16 +309,12 @@ paths:
                   message:
                     type: string
                     example: Logged out successfully
-        400:
-          $ref: '#/components/responses/UnauthorizedError'
-        401:
-          $ref: '#/components/responses/ForbiddenError'
-        404:
-          $ref: '#/components/responses/DeletedAccountError'
 
+        401:
+          $ref: '#/components/responses/AuthenticationError'
   /api/auth/forgot-password:
     post:
-      tags: [Auth]
+      tags: [Authentication]
       summary: Forgot password
       description: Send a reset password link to the user's email
       requestBody:
@@ -305,16 +322,29 @@ paths:
         content:
           application/json:
             schema:
+              required: [email]
               type: object
               properties:
                 email:
                   type: string
                   description: Your email must be valid
                   example: belallmuhammad0@gmail.com
-              required: [email]
       responses:
+        200:
+          description: Reset password link sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Password reset token sent to email successfully, You have 10 minutes to reset your password
         400:
-          description: Bad request, email not provided
+          description: email not provided
           content:
             application/json:
               schema:
@@ -339,23 +369,9 @@ paths:
                   message:
                     type: string
                     example: No user found with this email address
-        200:
-          description: Reset password link sent successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: success
-                  message:
-                    type: string
-                    example: Password reset token sent to email successfully, You have 10 minutes to reset your password
-
   /api/auth/reset-password/{token}:
     put:
-      tags: [Auth]
+      tags: [Authentication]
       summary: Reset password
       description: take the newPassword, and resetToken from the user and reset his/her password
       parameters:
@@ -365,18 +381,19 @@ paths:
             type: string
           required: true
           description: Reset password token sent to your email
+
       requestBody:
         required: true
         content:
           application/json:
             schema:
+              required: [newPassword]
               type: object
               properties:
                 newPassword:
                   type: string
                   description: Password must be at least 8 characters long
                   example: 12345678
-              required: [newPassword]
 
       responses:
         200:
@@ -389,11 +406,15 @@ paths:
                   status:
                     type: string
                     example: success
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
                   message:
                     type: string
                     example: Password reset successfully
+
         400:
-          description: Bad request, newPassword not provided
+          description: newPassword not provided or invalid token
           content:
             application/json:
               schema:
@@ -405,8 +426,17 @@ paths:
                   message:
                     type: string
                     example: newPassword is required
+              examples:
+                newPassword not provided:
+                  value:
+                    status: fail
+                    message: newPassword is required
+                invalid token:
+                  value:
+                    status: fail
+                    message: Token is invalid or has expired
         404:
-          description: Not found, user not found with this resetToken or resetToken is invalid
+          description: no user found with this token
           content:
             application/json:
               schema:
@@ -424,36 +454,47 @@ components:
   # Reusable schemas (data models)
   #-------------------------------
   schemas:
-    # User schema
     User:
       type: object
+      required: [name, email, password, role]
       properties:
         name:
           type: string
-          description: User's full name
+          description: The user's full name
           example: Belal Muhammad
         email:
           type: string
-          description: Your email must be valid as a verification code will be sent.
+          format: email
+          description: The user's email address, Your email must be valid as a verification code will be sent.
           example: belallmuhammad0@gmail.com
         role:
           type: string
-          description: role must be either customer or operator
-          example: customer
           enum: [customer, operator]
+          description: The user's role, must be either customer or operator
+          example: customer
         photo:
           type: string
-          description: User's profile photo in jpg or png format
-          example: photo.jpg
-          format: binary
-
+          format: binary # Or you could use a string with a format like 'url' or 'base64'
+          description: The user's profile photo (file upload)
   #-------------------------------
   # Reusable responses
   #-------------------------------
-
   responses:
-    UnauthorizedError:
-      description: Access token is missing or invalid
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: error
+              message:
+                type: string
+                example: 'Internal server error, please try again later'
+    AuthenticationError:
+      description: Authentication failed for various reasons
       content:
         application/json:
           schema:
@@ -464,43 +505,33 @@ components:
                 example: fail
               message:
                 type: string
-                example: You are not logged in. Please log in to access this route
-
-    ForbiddenError:
-      description: You are not authorized to access this route
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: fail
-              message:
-                type: string
-                example: User recently changed password. Please log in again.
-
-    DeletedAccountError:
-      description: trying to access a route with a deleted account
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: fail
-              message:
-                type: string
-                example: The user belonging to this token no longer exists.
-
+                example: Authentication failed
+          examples:
+            Access token is missing:
+              value:
+                status: fail
+                message: You are not logged in. Please log in to access this route
+            Access token is invalid:
+              value:
+                status: fail
+                message: Invalid token. Please log in again
+            Access token has expired:
+              value:
+                status: fail
+                message: Your token has expired. Please log in again
+            User not found:
+              value:
+                status: fail
+                message: The user belonging to this token no longer exists
+            Password changed:
+              value:
+                status: fail
+                message: User recently changed password. Please log in again.
   securitySchemes:
-    bearerAuth:
+    Authentication:
       type: http
       scheme: bearer
-      in: header
-      name: Authorization
       bearerFormat: JWT
 
 security:
-  - bearerAuth: []
+  - Authentication: []
