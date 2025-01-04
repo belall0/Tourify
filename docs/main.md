@@ -2,7 +2,7 @@
 
 ## Functional Requirements
 
-### 1. Authentication ⏳
+### 1. Authentication ✅
 
 - User can sign up. => `POST /api/auth/signup`
 - User can verify email after signing up. => `POST /api/auth/verify-email`
@@ -11,14 +11,14 @@
 - User can log out. => `POST /api/auth/logout`
 - User can reset password. => `POST /api/auth/forgot-password` and `POST /api/auth/reset-password`
 
-### 2. Profile
+### 2. Profile ✅
 
 - User can view their profile. => `GET /api/users/me`
 - User can update their profile. => `PUT /api/users/me`
 - User can update their password. => `PUT /api/users/me/password`
 - User can delete their account. => `DELETE /api/users/me`
 
-### 3. Tour
+### 3. Tour ⏳
 
 - Operator can create a tour. => `POST /api/tours`
 - Operator can update a tour. => `PUT /api/tours/:tourId`

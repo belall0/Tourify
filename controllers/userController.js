@@ -4,43 +4,103 @@ import HttpError from '../utils/httpError.js';
 import { HttpStatus, success } from '../utils/responseHandler.js';
 import { generateToken } from '../utils/jwtUtils.js';
 import { filterObjectFields, filterDocumentFields } from '../utils/dataFilter.js';
+import { uploadToCloudinary, deleteFromCloudinary } from '../middlewares/uploadHandler.js';
+import Email from '../utils/emailService.js';
 
 export const getProfile = catchAsync(async (req, res, next) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet implemented!',
+  // 1. Filter user document to remove sensitive information from the response
+  const filteredUser = filterDocumentFields(req.user, ['_id', 'name', 'email', 'role', 'photoUrl']);
+
+  // 2. Send the filtered user document in the response to the client
+  res.status(HttpStatus.OK).json({
+    status: 'success',
+    user: filteredUser,
   });
 });
 
 export const updateProfile = catchAsync(async (req, res, next) => {
-  // 1. Check if password update is requested
-  const { password } = req.body;
-  if (password) {
+  // 1. Check if password update is attempted
+  if (req.body.password) {
     return next(
       new HttpError(
-        "Password updates are not allowed through this endpoint. To update your password, please use the '/api/users/update-password' endpoint.",
+        'This route is not for password updates. Please use /api/users/me/password route.',
         HttpStatus.BAD_REQUEST,
       ),
     );
   }
 
-  // 2. Filter and sanitize input fields to prevent unauthorized data injection
-  const filteredBody = filterObjectFields(req.body, ['name', 'email', 'photo', 'role']);
+  // 2. Sanitize the request body
+  const sanitizedBody = filterObjectFields(req.body, ['name', 'email', 'role']);
 
-  // 3. Check if there is no any valid fields to update
-  const modifiedFields = Object.keys(filteredBody).length;
-  if (!modifiedFields && !req.file) {
-    return next(new HttpError('No valid fields provided in the request body', HttpStatus.BAD_REQUEST));
+  // 3. Check if there are any fields to update
+  if (Object.keys(sanitizedBody).length === 0 && !req.file) {
+    return next(new HttpError('No valid fields to update', HttpStatus.BAD_REQUEST));
   }
 
-  // 4. Merge the filtered fields into the user's current data
-  Object.assign(req.user, filteredBody);
+  // 4. Handle photo upload if present
+  if (req.file) {
+    const result = await uploadToCloudinary(req.file.buffer, {
+      folder: 'users',
+      public_id: `user-${req.user._id}`,
+      isProfilePhoto: true,
+    });
+
+    sanitizedBody.photoUrl = result.url;
+    sanitizedBody.photo = result.public_id;
+  }
+
+  // 5. Handle email update if present
+  const isEmailChanged = sanitizedBody.email && sanitizedBody.email !== req.user.email;
+  if (isEmailChanged) {
+    // Send verification code to user's email
+    const emailVerificationCode = req.user.createEmailVerificationCode();
+    await new Email(req.user, emailVerificationCode).sendEmailVerification();
+
+    // set isAccountVerified to false
+    req.user.isAccountVerified = false;
+  }
+
+  // 6. Merge the filtered fields into the user's current data and save the user document
+  Object.assign(req.user, sanitizedBody);
   await req.user.save();
 
-  // 5. Filter user document to remove sensitive information from the response
-  const filteredUser = filterDocumentFields(req.user, ['name', 'email', 'photo', 'role']);
+  // 7. Filter user document to remove sensitive information from the response
+  const filteredUser = filterDocumentFields(req.user, ['_id', 'name', 'email', 'role', 'photoUrl']);
 
-  success(res, HttpStatus.ACCEPTED, filteredUser, 'user', generateToken(req.user._id), 'You data updated successfully');
+  // 8. Send the updated user document in the response to the client along with a success message
+  const response = {
+    status: 'success',
+  };
+  if (isEmailChanged) {
+    response.message = 'Your profile has been updated. Please verify your new email to continue.';
+    // log out user from all devices if the user updates their email
+    res.cookie('jwt', 'loggedout', {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true,
+    });
+  } else {
+    response.message = 'Your profile has been updated successfully';
+    response.user = filteredUser;
+  }
+  res.status(HttpStatus.OK).json(response);
+});
+
+export const deleteProfile = catchAsync(async (req, res, next) => {
+  // 1. Delete the user document from the database
+  const user = await User.findByIdAndDelete(req.user._id);
+  // 2. Delete the user's profile photo from cloudinary
+  await deleteFromCloudinary(user.photo);
+
+  // 3. Send a success response to the client
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+
+  res.status(HttpStatus.OK).json({
+    status: 'success',
+    message: 'Your account has been deleted successfully',
+  });
 });
 
 export const updatePassword = catchAsync(async (req, res, next) => {
@@ -58,7 +118,7 @@ export const updatePassword = catchAsync(async (req, res, next) => {
 
   const isPasswordCorrect = await user.isPasswordCorrect(currentPassword);
   if (!isPasswordCorrect) {
-    return next(new HttpError('Current password is incorrect', HttpStatus.UNAUTHORIZED));
+    return next(new HttpError('Current password is incorrect', HttpStatus.BAD_REQUEST));
   }
 
   // 3. Update the user's password with the new password provided in the request body. and send a success response to the client
@@ -73,11 +133,4 @@ export const updatePassword = catchAsync(async (req, res, next) => {
   });
 
   success(res, HttpStatus.OK, null, null, token, 'Password Updated Successfully');
-});
-
-export const deleteProfile = catchAsync(async (req, res, next) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet implemented!',
-  });
 });

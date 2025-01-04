@@ -71,3 +71,11 @@ export const uploadToCloudinary = async (fileBuffer, options = {}) => {
     throw new Error(`Failed to upload image: ${error.message}`);
   }
 };
+
+export const deleteFromCloudinary = async (public_id) => {
+  try {
+    await cloudinary.uploader.destroy(public_id);
+  } catch (error) {
+    throw new Error(`Failed to delete image: ${error.message}`);
+  }
+};

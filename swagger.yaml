@@ -11,6 +11,7 @@ servers:
     description: Development server
 
 paths:
+  # Authentication routes
   /api/auth/signup:
     post:
       tags: [Authentication]
@@ -23,7 +24,7 @@ paths:
             schema:
               required: [name, email, password, role]
               allOf:
-                - $ref: '#/components/schemas/User'
+                - $ref: '#/components/schemas/UserRequest'
                 - type: object
                   properties:
                     password:
@@ -203,7 +204,6 @@ paths:
       tags: [Authentication]
       summary: Login user
       description: Login user with email and password
-
       requestBody:
         required: true
         content:
@@ -449,14 +449,206 @@ paths:
                     type: string
                     example: Token is invalid or has expired
 
+  # Profile routes
+  /api/users/me:
+    get:
+      tags: [Profile]
+      summary: Get user profile
+      description: Get the profile of the currently logged in user
+      responses:
+        200:
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      status:
+                        type: string
+                        example: success
+                      user:
+                        $ref: '#/components/schemas/UserResponse'
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Profile]
+      summary: Update user profile
+      description: Update the profile of the currently logged in user
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        200:
+          description: User profile updated successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  # User did not update email
+                  - type: object
+                    properties:
+                      status:
+                        type: string
+                        example: success
+                      user:
+                        $ref: '#/components/schemas/UserResponse'
+                      message:
+                        type: string
+                        example: User profile updated successfully
+                  # User updated email
+                  - type: object
+                    properties:
+                      status:
+                        type: string
+                        example: success
+
+                      message:
+                        type: string
+                        example: Your profile has been updated. Please verify your new email to continue.
+              examples:
+                'No Email Update': # Name for the first scenario
+                  value:
+                    status: success
+                    user:
+                      _id: 6778d5f71f7832516ea4db9b
+                      name: Belal Muhammad
+                      email: belallmuhammad0@gmail.com
+                      role: customer
+                      photoUrl: https://res.cloudinary.com/dnjmqmbcb/image/upload/v1735521771/default_m4q3fx.jpg
+                'Email Updated': # Name for the second scenario
+                  value:
+                    status: success
+                    message: Your profile has been updated. Please verify your new email to continue.
+        400:
+          description: Missing Value or Invalid Input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: Please provide a valid email
+              examples:
+                Update password:
+                  value:
+                    status: fail
+                    message: This route is not for password updates. Please use /api/users/me/password route.
+                No valid fields to update:
+                  value:
+                    status: fail
+                    message: No valid fields to update
+                Duplicate email:
+                  value:
+                    status: fail
+                    message: "Duplicate value for email: belallmuhammad0'"
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Profile]
+      summary: Delete user profile
+      description: Delete the profile of the currently logged in user
+      responses:
+        200:
+          description: User profile deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: User profile deleted successfully
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/users/me/password:
+    put:
+      tags: [Profile]
+      summary: Update user password
+      description: Update the password of the currently logged in user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required: [currentPassword, newPassword]
+              type: object
+              properties:
+                currentPassword:
+                  type: string
+                  description: Your current password
+                  example: securePassword123
+                newPassword:
+                  type: string
+                  description: Your new password
+                  example: newSecurePassword123
+      responses:
+        200:
+          description: User password updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                  message:
+                    type: string
+                    example: Password updated successfully
+        400:
+          description: Missing Value or Invalid Input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: Please provide a valid email
+              examples:
+                No valid fields to update:
+                  value:
+                    status: fail
+                    message: Please provide your current password along with the new password.
+                Invalid current password:
+                  value:
+                    status: fail
+                    message: Invalid current password
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
 components:
   #-------------------------------
   # Reusable schemas (data models)
   #-------------------------------
   schemas:
-    User:
+    UserRequest:
       type: object
-      required: [name, email, password, role]
       properties:
         name:
           type: string
@@ -476,6 +668,25 @@ components:
           type: string
           format: binary # Or you could use a string with a format like 'url' or 'base64'
           description: The user's profile photo (file upload)
+    UserResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 5f5b7b3b7f6f6b0017f7f6f6
+        name:
+          type: string
+          example: Belal Muhammad
+        email:
+          type: string
+          example: belallmuhammad0@gmail.com
+        role:
+          type: string
+          example: customer
+        photoUrl:
+          type: string
+          example: https://res.cloudinary.com/dnjmqmbcb/image/upload/v1735521771/default_m4q3fx.jpg
+
   #-------------------------------
   # Reusable responses
   #-------------------------------

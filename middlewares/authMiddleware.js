@@ -8,7 +8,12 @@ import { HttpStatus } from '../utils/responseHandler.js';
 export const protectRoute = catchAsync(async (req, res, next) => {
   // 1. Check if token exists
   let token = '';
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+  const isTokenHeaderExist =
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer') &&
+    req.headers.authorization.split(' ')[1] !== 'null';
+
+  if (isTokenHeaderExist) {
     token = req.headers.authorization.split(' ')[1];
   } else if (req.cookies.jwt) {
     token = req.cookies.jwt;

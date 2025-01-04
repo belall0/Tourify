@@ -3,7 +3,6 @@ import signup from './signup.js';
 import displayMap from './map.js';
 import logout from './logout.js';
 import updateProfileData from './updateProfile.js';
-console.log(`index.js loaded`);
 // DOM ELEMENTS
 const map = document.getElementById('map');
 const loginForm = document.querySelector('.login-form');

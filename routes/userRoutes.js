@@ -1,6 +1,7 @@
 import express from 'express';
 import * as userController from './../controllers/userController.js';
 import * as authMiddleware from './../middlewares/authMiddleware.js';
+import { upload } from '../middlewares/uploadHandler.js';
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ router.use(authMiddleware.protectRoute); // must be authenticated to access any 
 router
   .route('/me')
   .get(userController.getProfile)
-  .put(userController.updateProfile)
+  .put(upload.single('photo'), userController.updateProfile)
   .delete(userController.deleteProfile);
 
 router.put('/me/password', userController.updatePassword);
