@@ -10,6 +10,7 @@ import authRoutes from './routes/authRoutes.js';
 import viewRoutes from './routes/viewRoutes.js';
 import bookingsRoutes from './routes/bookingsRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 
 // Load the OpenAPI document
@@ -31,6 +32,7 @@ app.use('/api/tours', tourRoutes);
 app.use('/api/bookings', bookingsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // 404 handler to catch all unknown routes
 app.all('*', (req, res, next) => {

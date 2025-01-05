@@ -22,4 +22,11 @@ router.get(
   userController.getMyBookings,
 );
 
+router.get(
+  '/me/reviews',
+  authMiddleware.protectRoute,
+  authMiddleware.restrictTo('customer'),
+  userController.getMyReviews,
+);
+
 export default router;

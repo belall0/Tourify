@@ -8,6 +8,7 @@ import { uploadToCloudinary, deleteFromCloudinary } from '../middlewares/uploadH
 import Email from '../utils/emailService.js';
 import Tour from '../models/tourModel.js';
 import Booking from '../models/bookingModel.js';
+import Review from '../models/reviewModel.js';
 
 export const getProfile = catchAsync(async (req, res, next) => {
   // 1. Filter user document to remove sensitive information from the response
@@ -153,6 +154,19 @@ export const getMyBookings = catchAsync(async (req, res, next) => {
     results: bookings.length,
     data: {
       bookings,
+    },
+  });
+});
+
+export const getMyReviews = catchAsync(async (req, res, next) => {
+  // 1. Find all reviews of the current user
+  const reviews = await Review.find({ user: req.user.id }).setOptions({ skipPopulation: true }); // Skip population for performance
+
+  res.status(HttpStatus.OK).json({
+    status: 'success',
+    results: reviews.length,
+    data: {
+      reviews,
     },
   });
 });
