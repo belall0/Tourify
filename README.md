@@ -2,7 +2,7 @@
 
 ## Overview
 
-Tourify is a RESTful API designed for multi-operator tour management. Operators can post and manage tours, while customers can browse and book tours. Designed with readability, maintainability, and scalability in mind.
+Tourify is a RESTful API designed for multi-operator tour management System. Operators can post and manage tours, while customers can browse, book, and review tours, Designed with readability, maintainability, and scalability in mind.
 
 ## Technologies Used
 
@@ -12,15 +12,16 @@ Tourify is a RESTful API designed for multi-operator tour management. Operators 
 - **Email Service**: SendGrid
 - **Testing**: Vitest, Supertest, Postman
 - **Containerization**: Docker, Docker Compose, Docker Hub
-- **Deployment**:MongoDB Atlas,Azure Virtual Machine
+- **Deployment**:MongoDB Atlas, Azure Virtual Machine
 - **Image Storage**: Cloudinary
 - **Server-sidr Rendering**: Pug, HTML, CSS, JavaScript, maptiler
+- **Documentation**: Postman, Swagger
 
 ## Features
 
-- **Authentication**: Users can sign up, log in, log out, and reset their password.
+- **Authentication**: Users can signup, verify email, resend verification email, login, logout, and reset password.
 - **Authorization**: Users are assigned roles (customer, operator, admin) and can only access routes that are permitted for their role.
-- **RESTful API**: Well-defined endpoints for CRUD Operations on Different Resources.
+- **RESTful API**: Well-defined endpoints for CRUD operations on tours, users, reviews, and bookings.
 - **API Features**: Pagination, Filtering, Sorting, Field Limiting, and Aliasing.
 - **Email Service**: Users receive welcome emails and password reset emails.
 - **Image Upload**: Operators can upload images for their profile.
@@ -76,4 +77,4 @@ Build docker image and run the container
 docker compose -f docker-compose.yml up -d --build
 ```
 
-Visit <http://localhost:443> in your browser
+Visit <http://localhost:443/api-docs> in your browser

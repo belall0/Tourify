@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import YAML from 'yaml';
@@ -12,12 +13,14 @@ import bookingsRoutes from './routes/bookingsRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import swaggerUi from 'swagger-ui-express';
+import cros from 'cors';
 
 // Load the OpenAPI document
 const swaggerDocument = YAML.parse(fs.readFileSync('./swagger.yaml', 'utf8'));
 
 const app = express();
-
+app.use(cros());
+app.use(compression());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());

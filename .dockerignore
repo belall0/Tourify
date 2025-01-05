@@ -7,3 +7,4 @@ nodemon.json
 package-lock.json
 README.md
 .env
+Tourify.postman_collection.json
