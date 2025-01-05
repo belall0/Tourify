@@ -11,7 +11,7 @@ servers:
     description: Development server
 
 paths:
-  # Authentication routes
+  # AUTHENTICATION
   /api/auth/signup:
     post:
       tags: [Authentication]
@@ -448,8 +448,7 @@ paths:
                   message:
                     type: string
                     example: Token is invalid or has expired
-
-  # Profile routes
+  # PROFILE
   /api/users/me:
     get:
       tags: [Profile]
@@ -641,8 +640,7 @@ paths:
           $ref: '#/components/responses/AuthenticationError'
         500:
           $ref: '#/components/responses/InternalServerError'
-
-  # Tour routes
+  # TOURS
   /api/tours:
     post:
       tags: [Tours]
@@ -851,6 +849,512 @@ paths:
 
         500:
           $ref: '#/components/responses/InternalServerError'
+  # BOOKINGS
+  /api/tours/{id}/bookings:
+    post:
+      tags: [Bookings]
+      summary: Book a tour
+      description: Book a tour with provided details including slots, and total price, only for customers
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the tour to book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [slots]
+              properties:
+                slots:
+                  type: number
+                  description: The number of slots to book
+                  example: 2
+      responses:
+        201:
+          description: Tour booked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/completeBooking'
+        400:
+          description: Missing Value or Invalid Input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: Please provide a valid number of slots
+              examples:
+                No valid fields to update:
+                  value:
+                    status: fail
+                    message: Please provide the number of slots
+                Invalid slots:
+                  value:
+                    status: fail
+                    message: Slots must be at least 1
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        404:
+          $ref: '#/components/responses/NoTourFound'
+        409:
+          description: Not enough slots available
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: Not enough slots available
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: [Bookings]
+      summary: Get all bookings for a tour
+      description: Get all bookings for a tour
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the tour to get bookings for
+      responses:
+        200:
+          description: Bookings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  count:
+                    type: number
+                    example: 2
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/tourBooking'
+        404:
+          $ref: '#/components/responses/NoTourFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/bookings/{id}:
+    put:
+      tags: [Bookings]
+      summary: Update a booking
+      description: Update a booking with provided details, only for the user who created the booking
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the booking to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [slots]
+              properties:
+                slots:
+                  type: number
+                  description: The number of slots to book
+                  example: 2
+      responses:
+        200:
+          description: Booking updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/myBooking'
+        400:
+          description: Missing Value or Invalid Input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: Please provide a valid number of slots
+              examples:
+                No valid fields to update:
+                  value:
+                    status: fail
+                    message: Please provide the number of slots
+                Invalid slots:
+                  value:
+                    status: fail
+                    message: Slots must be at least 1
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        404:
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: No booking found with this ID
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Bookings]
+      summary: Delete a booking
+      description: Delete a booking, only for the user who created the booking
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the booking to delete
+      responses:
+        200:
+          description: Booking deleted successfully
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        404:
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: No booking found with this ID
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/users/me/bookings:
+    get:
+      tags: [Bookings]
+      summary: Get all bookings created by the currently logged in user
+      description: Get all bookings created by the currently logged in user
+      responses:
+        200:
+          description: Bookings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/myBooking'
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  # REVIEWS
+  /api/tours/{id}/reviews:
+    post:
+      tags: [Reviews]
+      summary: Create a review for a tour
+      description: Create a review for a tour with provided details and customer must book the tour to review it
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the tour to review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                review:
+                  type: string
+                  description: Your review must be at least 10 characters long
+                  example: This tour was amazing
+                rating:
+                  type: number
+                  description: Your rating must be between 1 and 5
+                  example: 5
+      responses:
+        201:
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/completeReview'
+        400:
+          description: Missing Value or Invalid Input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: Please provide a valid review
+              examples:
+                No valid fields to update:
+                  value:
+                    status: fail
+                    message: Please provide a review and rating
+                Invalid rating:
+                  value:
+                    status: fail
+                    message: Rating must be between 1 and 5
+                No booking found:
+                  value:
+                    status: fail
+                    message: You have to book the tour first to be able to review it
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        404:
+          $ref: '#/components/responses/NoTourFound'
+        409:
+          description: Review already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: You already reviewed this tour
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: [Reviews]
+      summary: Get all reviews for a tour
+      description: Get all reviews for a tour
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the tour to get reviews for
+      responses:
+        200:
+          description: Reviews retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  count:
+                    type: number
+                    example: 2
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/tourReview'
+        404:
+          $ref: '#/components/responses/NoTourFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/reviews/{id}:
+    put:
+      tags: [Reviews]
+      summary: Update a review
+      description: Update a review with provided details, only for the user who created the review
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the review to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                review:
+                  type: string
+                  description: Your review must be at least 10 characters long
+                  example: This tour was amazing
+                rating:
+                  type: number
+                  description: Your rating must be between 1 and 5
+                  example: 5
+      responses:
+        200:
+          description: Review updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/completeReview'
+        400:
+          description: Missing Value or Invalid Input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: Please provide a valid review
+              examples:
+                No valid fields to update:
+                  value:
+                    status: fail
+                    message: Please provide a review and rating
+                Invalid rating:
+                  value:
+                    status: fail
+                    message: Rating must be between 1 and 5
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        404:
+          description: Review not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: No review found with this ID
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Reviews]
+      summary: Delete a review
+      description: Delete a review, only for the user who created the review
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the review to delete
+      responses:
+        200:
+          description: Review deleted successfully
+
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        404:
+          description: Review not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: No review found with this ID
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/users/me/reviews:
+    get:
+      tags: [Reviews]
+      summary: Get all reviews created by the currently logged in user
+      description: Get all reviews created by the currently logged in user
+      responses:
+        200:
+          description: Reviews retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  count:
+                    type: number
+                    example: 2
+                  data:
+                    type: object
+                    properties:
+                      reviews:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MyReview'
+
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
 
 components:
   #-------------------------------
@@ -924,7 +1428,6 @@ components:
           type: string
           description: A detailed description of the tour
           example: This tour is great for everyone
-
     tourResponse:
       type: object
       properties:
@@ -952,33 +1455,123 @@ components:
         description:
           type: string
           example: This tour is great for everyone
-    bookingRequest:
+    completeBooking:
       type: object
       properties:
-        tour:
+        bookingId:
           type: string
           example: 677a5521f1b1378003c319ac
-        user:
+        tourId:
+          type: string
+          example: 577a5521f1b1378003c319ae
+        tourName:
+          type: string
+          example: The Great Tour
+        userId:
           type: string
           example: 5f5b7b3b7f6f6b0017f7f6f6
+        userName:
+          type: string
+          example: Belal Muhammad
         slots:
           type: number
           example: 2
-    bookingResponse:
+        totalPrice:
+          type: number
+          example: 1000
+    myBooking:
       type: object
       properties:
-        tour:
+        bookingId:
           type: string
           example: 677a5521f1b1378003c319ac
-        user:
+        tourId:
           type: string
-          example: 5f5b7b3b7f6f6b0017f7f6f6
+          example: 577a5521f1b1378003c319ae
+        tourName:
+          type: string
+          example: The Great Tour
         slots:
           type: number
           example: 2
-        _id:
+        totalPrice:
+          type: number
+          example: 1000
+    tourBooking:
+      type: object
+      properties:
+        bookingId:
           type: string
           example: 677a5521f1b1378003c319ac
+        userId:
+          type: string
+          example: 5f5b7b3b7f6f6b0017f7f6f6
+        userName:
+          type: string
+          example: Belal Muhammad
+        slots:
+          type: number
+          example: 2
+        totalPrice:
+          type: number
+          example: 1000
+    completeReview:
+      type: object
+      properties:
+        reviewId:
+          type: string
+          example: 677a5521f1b1378003c319ac
+        tourId:
+          type: string
+          example: 577a5521f1b1378003c319ae
+        tourName:
+          type: string
+          example: The Great Tour
+        userId:
+          type: string
+          example: 5f5b7b3b7f6f6b0017f7f6f6
+        userName:
+          type: string
+          example: Belal Muhammad
+        rating:
+          type: number
+          example: 5
+        review:
+          type: string
+          example: This tour was amazing
+    tourReview:
+      type: object
+      properties:
+        reviewId:
+          type: string
+          example: 677a5521f1b1378003c319ac
+        name:
+          type: string
+          example: Belal Muhammad
+        review:
+          type: string
+          example: This tour was amazing
+        rating:
+          type: number
+          example: 5
+    MyReview:
+      type: object
+      properties:
+        reviewId:
+          type: string
+          example: 677a5521f1b1378003c319ac
+        tourId:
+          type: string
+          example: 577a5521f1b1378003c319ae
+        tourName:
+          type: string
+          example: The Great Tour
+        rating:
+          type: number
+          example: 5
+        review:
+          type: string
+          example: This tour was amazing
 
   #-------------------------------
   # Reusable responses
@@ -1036,7 +1629,6 @@ components:
               value:
                 status: fail
                 message: You do not have permission to perform this action
-
     InternalServerError:
       description: Internal server error
       content:
@@ -1050,6 +1642,19 @@ components:
               message:
                 type: string
                 example: 'Internal server error, please try again later'
+    NoTourFound:
+      description: No tour found with this ID
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: No tour found with this ID
 
   securitySchemes:
     Authentication:

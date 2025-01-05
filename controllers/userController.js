@@ -147,26 +147,39 @@ export const getMyTours = catchAsync(async (req, res, next) => {
 
 export const getMyBookings = catchAsync(async (req, res, next) => {
   // 1. Find all bookings of the current user
-  const bookings = await Booking.find({ user: req.user.id }).setOptions({ skipPopulation: true }); // Skip population for performance
+  const bookings = await Booking.find({ user: req.user.id }).setOptions({ populateTour: true }); // Skip population for performance
 
+  console.log(bookings);
   res.status(HttpStatus.OK).json({
     status: 'success',
-    results: bookings.length,
+    count: bookings.length,
     data: {
-      bookings,
+      bookings: bookings.map((booking) => ({
+        bookingId: booking.id,
+        tourId: booking.tour.id,
+        tourName: booking.tour.name,
+        slots: booking.slots,
+        price: booking.totalPrice,
+      })),
     },
   });
 });
 
 export const getMyReviews = catchAsync(async (req, res, next) => {
   // 1. Find all reviews of the current user
-  const reviews = await Review.find({ user: req.user.id }).setOptions({ skipPopulation: true }); // Skip population for performance
-
+  const reviews = await Review.find({ user: req.user.id }).setOptions({ populateTour: true }); // Skip population for performance
+  console.log(reviews);
   res.status(HttpStatus.OK).json({
     status: 'success',
-    results: reviews.length,
+    count: reviews.length,
     data: {
-      reviews,
+      reviews: reviews.map((review) => ({
+        reviewId: review.id,
+        tourId: review.tour.id,
+        tourName: review.tour.name,
+        rating: review.rating,
+        review: review.review,
+      })),
     },
   });
 });

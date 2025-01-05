@@ -40,6 +40,23 @@ const reviewSchema = new mongoose.Schema(
   },
 );
 
+// populate the user when the review is queried
+reviewSchema.pre(/^find/, function (next) {
+  if (this.options && this.options.populateUser) {
+    this.populate({
+      path: 'user',
+      select: 'name',
+    });
+  } else if (this.options && this.options.populateTour) {
+    this.populate({
+      path: 'tour',
+      select: '_id name',
+    });
+  }
+
+  next();
+});
+
 reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
 
 const Review = mongoose.model('Review', reviewSchema);

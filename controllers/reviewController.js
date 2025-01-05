@@ -13,13 +13,13 @@ export const createReview = catchAsync(async (req, res, next) => {
   // 2. Check if tour exists
   const tour = await Tour.findById(tourId);
   if (!tour) {
-    return next(new HttpError('Tour not found', 404));
+    return next(new HttpError('No tour found with this ID', 404));
   }
 
   // 3. Check if user booked the tour before
   const isBooked = await Booking.findOne({ tour: tourId, user: userId });
   if (!isBooked) {
-    return next(new HttpError('You need to book the tour first to be able to review it', 400));
+    return next(new HttpError('You have to book the tour first to be able to review it', 400));
   }
 
   // 4. Check if user already reviewed the tour
@@ -44,7 +44,15 @@ export const createReview = catchAsync(async (req, res, next) => {
   res.status(201).json({
     status: 'success',
     data: {
-      review: newReview,
+      review: {
+        reviewId: newReview._id,
+        tourId: tour._id,
+        tourName: tour.name,
+        userId: userId,
+        userName: req.user.name,
+        review: newReview.review,
+        rating: newReview.rating,
+      },
     },
   });
 });
@@ -81,7 +89,12 @@ export const updateReview = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     data: {
-      review: reviewToUpdate,
+      review: {
+        reviewId: reviewToUpdate._id,
+        tourName: tour.name,
+        review: reviewToUpdate.review,
+        rating: reviewToUpdate.rating,
+      },
     },
   });
 });
@@ -123,13 +136,20 @@ export const getAllReviews = catchAsync(async (req, res, next) => {
   // 1. Get the tour id
   const tourId = req.params.id;
   // 2. Get all reviews for the tour
-  const reviews = await Review.find({ tour: tourId });
+  const reviews = await Review.find({ tour: tourId }).setOptions({ populateUser: true });
+
   // 3. Send the response
+
   res.status(200).json({
     status: 'success',
-    results: reviews.length,
+    count: reviews.length,
     data: {
-      reviews,
+      reviews: reviews.map((review) => ({
+        reviewId: review._id,
+        name: review.user.name,
+        review: review.review,
+        rating: review.rating,
+      })),
     },
   });
 });

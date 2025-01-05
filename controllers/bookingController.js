@@ -57,7 +57,15 @@ export const createBooking = catchAsync(async (req, res, next) => {
   res.status(201).json({
     status: 'success',
     data: {
-      booking,
+      booking: {
+        bookingId: booking._id,
+        tourId: booking.tour._id,
+        tourName: tour.name,
+        userId: booking.user._id,
+        userName: req.user.name,
+        slots: booking.slots,
+        totalPrice: booking.totalPrice,
+      },
     },
   });
 });
@@ -109,18 +117,16 @@ export const updateBooking = catchAsync(async (req, res, next) => {
   booking.totalPrice = totalPrice;
   await booking.save();
 
-  // 9. Send the response
-  const newBooking = {
-    _id: booking._id,
-    user: booking.user._id,
-    tour: booking.tour._id,
-    slots: booking.slots,
-    totalPrice: booking.totalPrice,
-  };
   res.status(200).json({
     status: 'success',
     data: {
-      newBooking,
+      booking: {
+        bookingId: booking._id,
+        tourId: booking.tour._id,
+        tourName: tour.name,
+        slots: booking.slots,
+        totalPrice: booking.totalPrice,
+      },
     },
   });
 });
@@ -178,7 +184,13 @@ export const getAllBookings = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     data: {
-      bookings,
+      bookings: bookings.map((booking) => ({
+        bookingId: booking._id,
+        userId: booking.user._id,
+        userName: booking.user.name,
+        slots: booking.slots,
+        totalPrice: booking.totalPrice,
+      })),
     },
   });
 });
