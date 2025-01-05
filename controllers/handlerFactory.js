@@ -6,7 +6,7 @@ import HttpError from '../utils/httpError.js';
 export const createOne = (Model) =>
   catchAsync(async (req, res, next) => {
     // Add owner field to the request body if the model is 'Tour'
-    if (Model.modelName.toLowerCase() === 'tour') req.body.owner = req.user.id;
+    if (Model.modelName.toLowerCase() === 'tour') req.body.ownerId = req.user.id;
 
     const doc = await Model.create(req.body);
     success(res, HttpStatus.CREATED, doc, Model.modelName.toLowerCase());
@@ -56,9 +56,12 @@ export const updateOne = (Model) =>
       );
 
     // Check ownership of the resource before updating if it is a 'Tour'
-    if (Model.modelName.toLowerCase() === 'tour' && doc.owner.toString() !== req.user.id)
+    if (Model.modelName.toLowerCase() === 'tour' && doc.ownerId.toString() !== req.user.id)
       return next(
-        new HttpError(`You are not authorized to modify this ${Model.modelName.toLowerCase()}`, HttpStatus.FORBIDDEN),
+        new HttpError(
+          `You are not authorized to modify this ${Model.modelName.toLowerCase()}`,
+          HttpStatus.UNAUTHORIZED,
+        ),
       );
 
     Object.assign(doc, req.body);
@@ -77,7 +80,7 @@ export const deleteOne = (Model) =>
       );
 
     // 2. Check ownership of the resource before deleting if it is a 'Tour'
-    if (Model.modelName.toLowerCase() === 'tour' && doc.owner.toString() !== req.user.id && req.user.role !== 'admin')
+    if (Model.modelName.toLowerCase() === 'tour' && doc.ownerId.toString() !== req.user.id && req.user.role !== 'admin')
       return next(
         new HttpError(`You are not authorized to delete this ${Model.modelName.toLowerCase()}`, HttpStatus.FORBIDDEN),
       );
@@ -86,5 +89,5 @@ export const deleteOne = (Model) =>
     await doc.deleteOne();
 
     // 4. Send response
-    success(res, HttpStatus.NO_CONTENT);
+    success(res, HttpStatus.NO_CONTENT, null, null, `${Model.modelName.toLowerCase()} deleted successfully`);
   });

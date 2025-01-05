@@ -14,5 +14,6 @@ router
   .delete(userController.deleteProfile);
 
 router.put('/me/password', userController.updatePassword);
+router.get('/me/tours', authMiddleware.protectRoute, authMiddleware.restrictTo('operator'), userController.getMyTours);
 
 export default router;

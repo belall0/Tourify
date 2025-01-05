@@ -642,6 +642,217 @@ paths:
         500:
           $ref: '#/components/responses/InternalServerError'
 
+  # Tour routes
+  /api/tours:
+    post:
+      tags: [Tours]
+      summary: Create a new tour
+      description: Create a new tour with provided details including name, duration, maxGroupSize, difficulty, price, and description, only for operators
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tourRequest'
+      responses:
+        201:
+          description: Tour created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/tourResponse'
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: [Tours]
+      summary: Get all tours
+      description: Get all tours
+      responses:
+        200:
+          description: Tours retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/tourResponse'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/users/me/tours:
+    get:
+      tags: [Tours]
+      summary: Get all tours created by the currently logged in operator
+      description: Get all tours created by the currently logged in operator
+      responses:
+        200:
+          description: Tours retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/tourResponse'
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/tours/{id}:
+    get:
+      tags: [Tours]
+      summary: Get a tour
+      description: Get a tour by ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the tour to retrieve
+      responses:
+        200:
+          description: Tour retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/tourResponse'
+        404:
+          description: Tour not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: No tour found with this ID
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Tours]
+      summary: Update a tour
+      description: Update a tour with provided details including name, duration, maxGroupSize, difficulty, price, and description, only for operators, and only for tours created by the operator
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the tour to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tourRequest'
+      responses:
+        200:
+          description: Tour updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/tourResponse'
+        401:
+          allOf:
+            - $ref: '#/components/responses/AuthenticationError'
+            - $ref: '#/components/responses/AuthorizationError'
+        404:
+          description: Tour not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: No tour found with this ID
+
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Tours]
+      summary: Delete a tour
+      description: Delete a tour, only for operators, and only for tours created by the operator
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the tour to delete
+      responses:
+        200:
+          description: Tour deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Tour deleted successfully
+        401:
+          allOf:
+            - $ref: '#/components/responses/AuthenticationError'
+            - $ref: '#/components/responses/AuthorizationError'
+        404:
+          description: Tour not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: No tour found with this ID
+
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
 components:
   #-------------------------------
   # Reusable schemas (data models)
@@ -686,6 +897,61 @@ components:
         photoUrl:
           type: string
           example: https://res.cloudinary.com/dnjmqmbcb/image/upload/v1735521771/default_m4q3fx.jpg
+    tourRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the tour
+          example: The Great Tour
+        duration:
+          type: number
+          description: The duration of the tour in days
+          example: 5
+        maxGroupSize:
+          type: number
+          description: The maximum group size for the tour
+          example: 10
+        difficulty:
+          type: string
+          enum: [easy, medium, difficult]
+          description: The difficulty level of the tour
+          example: medium
+        price:
+          type: number
+          description: The price of the tour
+          example: 500
+        description:
+          type: string
+          description: A detailed description of the tour
+          example: This tour is great for everyone
+    tourResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 677a5521f1b1378003c319ac
+        ownerId:
+          type: string
+          example: 5f5b7b3b7f6f6b0017f7f6f6
+        name:
+          type: string
+          example: The Great Tour
+        duration:
+          type: number
+          example: 5
+        maxGroupSize:
+          type: number
+          example: 10
+        difficulty:
+          type: string
+          example: medium
+        price:
+          type: number
+          example: 500
+        description:
+          type: string
+          example: This tour is great for everyone
 
   #-------------------------------
   # Reusable responses
@@ -738,6 +1004,30 @@ components:
               value:
                 status: fail
                 message: User recently changed password. Please log in again.
+
+    AuthorizationError:
+      description: Authorization failed for various reasons
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: Authorization failed
+          examples:
+            permission denied:
+              value:
+                status: fail
+                message: You do not have permission to perform this action
+            authorization:
+              value:
+                status: fail
+                message: You are not authorized to perform this action
+
   securitySchemes:
     Authentication:
       type: http

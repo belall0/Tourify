@@ -54,61 +54,14 @@ const tourSchema = new mongoose.Schema(
       required: [true, 'Price is required'],
       min: [0, 'Price must be positive'],
     },
-    priceDiscount: {
-      type: Number,
-      default: 0,
-      validate: {
-        validator: function (value) {
-          return value <= this.price;
-        },
-        message: `Discount price ({VALUE}) should be below the regular price`,
-      },
-    },
-    summary: {
-      type: String,
-      required: [true, 'tour summary is required'],
-      trim: true,
-    },
     description: {
       type: String,
       trim: true,
     },
-    imageCover: {
-      type: String,
-      required: [true, 'Image Cover is required'],
+    ownerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
     },
-    images: [String],
-    startDates: [Date],
-    startLocation: {
-      type: {
-        type: String,
-        default: 'point',
-        enum: ['point'],
-      },
-      coordinates: [Number], // [latitude, longitude]
-      address: String,
-      description: String,
-    },
-    locations: [
-      {
-        type: {
-          type: String,
-          default: 'point',
-          enum: ['point'],
-        },
-
-        coordinates: [Number], // [latitude, longitude]
-        address: String,
-        description: String,
-        day: Number,
-      },
-    ],
-    guides: [
-      {
-        type: mongoose.Schema.ObjectId,
-        ref: 'User',
-      },
-    ],
   },
   {
     timestamps: true,
@@ -119,20 +72,6 @@ const tourSchema = new mongoose.Schema(
 
 tourSchema.pre('save', async function (next) {
   this.slug = slugify(this.name, { lower: true });
-
-  next();
-});
-
-tourSchema.pre(/^find/, function (next) {
-  // Skip population if the query options specify to do so
-  if (this.options.skipPopulation) {
-    return next();
-  }
-
-  this.populate({
-    path: 'guides',
-    select: 'name email photo role -_id',
-  });
 
   next();
 });

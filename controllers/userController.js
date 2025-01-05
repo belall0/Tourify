@@ -6,6 +6,7 @@ import { generateToken } from '../utils/jwtUtils.js';
 import { filterObjectFields, filterDocumentFields } from '../utils/dataFilter.js';
 import { uploadToCloudinary, deleteFromCloudinary } from '../middlewares/uploadHandler.js';
 import Email from '../utils/emailService.js';
+import Tour from '../models/tourModel.js';
 
 export const getProfile = catchAsync(async (req, res, next) => {
   // 1. Filter user document to remove sensitive information from the response
@@ -133,4 +134,11 @@ export const updatePassword = catchAsync(async (req, res, next) => {
   });
 
   success(res, HttpStatus.OK, null, null, token, 'Password Updated Successfully');
+});
+
+export const getMyTours = catchAsync(async (req, res, next) => {
+  console.log(req.user.id);
+  const tours = await Tour.find({ ownerId: req.user.id });
+
+  success(res, HttpStatus.OK, tours, 'tours');
 });
