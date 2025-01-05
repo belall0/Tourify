@@ -7,6 +7,7 @@ import { filterObjectFields, filterDocumentFields } from '../utils/dataFilter.js
 import { uploadToCloudinary, deleteFromCloudinary } from '../middlewares/uploadHandler.js';
 import Email from '../utils/emailService.js';
 import Tour from '../models/tourModel.js';
+import Booking from '../models/bookingModel.js';
 
 export const getProfile = catchAsync(async (req, res, next) => {
   // 1. Filter user document to remove sensitive information from the response
@@ -141,4 +142,17 @@ export const getMyTours = catchAsync(async (req, res, next) => {
   const tours = await Tour.find({ ownerId: req.user.id });
 
   success(res, HttpStatus.OK, tours, 'tours');
+});
+
+export const getMyBookings = catchAsync(async (req, res, next) => {
+  // 1. Find all bookings of the current user
+  const bookings = await Booking.find({ user: req.user.id }).setOptions({ skipPopulation: true }); // Skip population for performance
+
+  res.status(HttpStatus.OK).json({
+    status: 'success',
+    results: bookings.length,
+    data: {
+      bookings,
+    },
+  });
 });

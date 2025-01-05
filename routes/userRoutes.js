@@ -15,5 +15,11 @@ router
 
 router.put('/me/password', userController.updatePassword);
 router.get('/me/tours', authMiddleware.protectRoute, authMiddleware.restrictTo('operator'), userController.getMyTours);
+router.get(
+  '/me/bookings',
+  authMiddleware.protectRoute,
+  authMiddleware.restrictTo('customer'),
+  userController.getMyBookings,
+);
 
 export default router;

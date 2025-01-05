@@ -8,6 +8,7 @@ import globalMiddlewareHandler from './middlewares/errorMiddleware.js';
 import tourRoutes from './routes/tourRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import viewRoutes from './routes/viewRoutes.js';
+import bookingsRoutes from './routes/bookingsRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 
@@ -27,6 +28,7 @@ app.set('views', './views');
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/', viewRoutes);
 app.use('/api/tours', tourRoutes);
+app.use('/api/bookings', bookingsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 

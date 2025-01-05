@@ -30,6 +30,10 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'Max group size is required'],
     },
+    numberOfBookings: {
+      type: Number,
+      default: 0,
+    },
     difficulty: {
       type: String,
       required: [true, 'Difficulty is required'],

@@ -18,7 +18,7 @@
 - User can update their password. => `PUT /api/users/me/password`
 - User can delete their account. => `DELETE /api/users/me`
 
-### 3. Tour ⏳
+### 3. Tour ✅
 
 - Operator can create a tour. => `POST /api/tours`
 - Operator can update a tour. => `PUT /api/tours/:tourId`
@@ -27,7 +27,7 @@
 - User can view all tours. => `GET /api/tours`
 - User can view a single tour. => `GET /api/tours/:tourId`
 
-### 5. Booking
+### 5. Booking ⏳
 
 - User can book a tour. => `POST /api/tours/:tourId/bookings`
 - User can update a booking such as the number of people. => `PUT /api/bookings/:bookingId`

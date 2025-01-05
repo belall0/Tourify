@@ -692,7 +692,6 @@ paths:
                       $ref: '#/components/schemas/tourResponse'
         500:
           $ref: '#/components/responses/InternalServerError'
-
   /api/users/me/tours:
     get:
       tags: [Tours]
@@ -925,6 +924,7 @@ components:
           type: string
           description: A detailed description of the tour
           example: This tour is great for everyone
+
     tourResponse:
       type: object
       properties:
@@ -952,24 +952,38 @@ components:
         description:
           type: string
           example: This tour is great for everyone
+    bookingRequest:
+      type: object
+      properties:
+        tour:
+          type: string
+          example: 677a5521f1b1378003c319ac
+        user:
+          type: string
+          example: 5f5b7b3b7f6f6b0017f7f6f6
+        slots:
+          type: number
+          example: 2
+    bookingResponse:
+      type: object
+      properties:
+        tour:
+          type: string
+          example: 677a5521f1b1378003c319ac
+        user:
+          type: string
+          example: 5f5b7b3b7f6f6b0017f7f6f6
+        slots:
+          type: number
+          example: 2
+        _id:
+          type: string
+          example: 677a5521f1b1378003c319ac
 
   #-------------------------------
   # Reusable responses
   #-------------------------------
   responses:
-    InternalServerError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: error
-              message:
-                type: string
-                example: 'Internal server error, please try again later'
     AuthenticationError:
       description: Authentication failed for various reasons
       content:
@@ -1004,7 +1018,6 @@ components:
               value:
                 status: fail
                 message: User recently changed password. Please log in again.
-
     AuthorizationError:
       description: Authorization failed for various reasons
       content:
@@ -1023,10 +1036,20 @@ components:
               value:
                 status: fail
                 message: You do not have permission to perform this action
-            authorization:
-              value:
-                status: fail
-                message: You are not authorized to perform this action
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: error
+              message:
+                type: string
+                example: 'Internal server error, please try again later'
 
   securitySchemes:
     Authentication:
