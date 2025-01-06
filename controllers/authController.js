@@ -115,6 +115,7 @@ export const verifyEmail = catchAsync(async (req, res, next) => {
   res.cookie('jwt', token, {
     expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
     httpOnly: true,
+    secure: true,
   });
 
   // 6. Send response with message
@@ -150,6 +151,7 @@ export const login = catchAsync(async (req, res, next) => {
   res.cookie('jwt', token, {
     expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
     httpOnly: true,
+    secure: true,
   });
 
   // 6. Send response with token
@@ -165,6 +167,7 @@ export const logout = catchAsync(async (req, res, next) => {
   res.cookie('jwt', 'loggedout', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
+    secure: true,
   });
 
   // 2. Send response with message
@@ -256,6 +259,7 @@ export const resetPassword = catchAsync(async (req, res, next) => {
   res.cookie('jwt', newToken, {
     expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
     httpOnly: true,
+    secure: true,
   });
 
   res.status(HttpStatus.OK).json({

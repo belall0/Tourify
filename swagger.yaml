@@ -9,6 +9,8 @@ info:
 servers:
   - url: https://tourify.belalmuhammad.me/
     description: Production server
+  - url: https://localhost:443
+    description: Production server
 
 paths:
   # AUTHENTICATION
@@ -1658,9 +1660,13 @@ components:
 
   securitySchemes:
     Authentication:
-      type: http
+      type: https
       scheme: bearer
       bearerFormat: JWT
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: jwt
 
 security:
-  - Authentication: []
+  - cookieAuth: []

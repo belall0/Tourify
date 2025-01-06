@@ -80,6 +80,7 @@ export const updateProfile = catchAsync(async (req, res, next) => {
     res.cookie('jwt', 'loggedout', {
       expires: new Date(Date.now() + 10 * 1000),
       httpOnly: true,
+      secure: true,
     });
   } else {
     response.message = 'Your profile has been updated successfully';
@@ -98,6 +99,7 @@ export const deleteProfile = catchAsync(async (req, res, next) => {
   res.cookie('jwt', 'loggedout', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
+    secure: true,
   });
 
   res.status(HttpStatus.OK).json({
@@ -133,6 +135,7 @@ export const updatePassword = catchAsync(async (req, res, next) => {
   res.cookie('jwt', token, {
     expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
     httpOnly: true,
+    secure: true,
   });
 
   success(res, HttpStatus.OK, null, null, token, 'Password Updated Successfully');

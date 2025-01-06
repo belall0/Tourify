@@ -4,7 +4,7 @@ import showAlert from './alerts';
 const signup = async (name, email, role, password, confirmPassword, photo) => {
   try {
     const res = await axios.post(
-      '/api/users/signup',
+      '/api/auth/signup',
       {
         name,
         email,
