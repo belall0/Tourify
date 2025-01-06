@@ -6,7 +6,7 @@ Tourify is a RESTful API designed for multi-operator tour management System. Ope
 
 ## Getting Started
 
-A live version of the API is hosted on an Azure Virtual Machine and is accessible at: <https://tourify.azurewebsites.net/api-docs>
+A live version of the API is hosted on an Azure Virtual Machine and is accessible at: <https://tourify.belalmuhammad.me/api-docs>
 
 You can test the API with the following demo credentials:
 
