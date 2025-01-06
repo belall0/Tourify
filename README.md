@@ -4,6 +4,24 @@
 
 Tourify is a RESTful API designed for multi-operator tour management System. Operators can post and manage tours, while customers can browse, book, and review tours, Designed with readability, maintainability, and scalability in mind.
 
+## Getting Started
+
+A live version of the API is hosted on an Azure Virtual Machine and is accessible at: <https://tourify.azurewebsites.net/api-docs>
+
+You can test the API with the following demo credentials:
+
+**Operator Account:**
+
+- **Email:** operator1@gmail.com
+- **Password:** password
+
+**Customer Account:**
+
+- **Email:** customer1@gmail.com
+- **Password:** password
+
+Alternatively, feel free to create your own account. Note that email verification is required for new accounts.
+
 ## Technologies Used
 
 - **Architecture**: RESTful API, MVC
